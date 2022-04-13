@@ -1,4 +1,4 @@
-# Projet en STRUCTURE DE DONNEE 2022
+#Structure de Donnée 2022 
 
 <h1>Projet : Blockchain appliquée à un processus éléctoral </h1>
   <p> Nous consid´erons dans ce projet l’organisation d’un processus électoral par scrutin uninominal majoritaire à deux tours (comme ici en France).</p>
