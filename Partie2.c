@@ -13,11 +13,11 @@ void init_pair_keys(Key* pKey, Key* sKey, long low_size, long up_size){
     while ( p == q ) {
         q = random_prime_number (low_size ,up_size , 5000) ;
     }
-    long n , s , u ;
+    long n , s , u, t ;
     generate_key_values (p ,q ,&n ,&s ,&u ) ;
     //Pour avoir des cles positives :
     if (u < 0) {
-        long t = (p -1) *( q -1) ;
+        t = (p -1) *( q -1) ;
         u = u + t ; //on aura toujours s*u mod t = 1
     }
     init_key(pKey,s,n);
@@ -43,8 +43,8 @@ Key* str_to_key(char* str){
 
 Signature* init_signature(long* content, int size){
     Signature* res = (Signature*)malloc(sizeof(Signature));
-    res -> content = content;
-    res -> size = size; 
+    res->content = content;
+    res->size = size; 
     return res; 
 }
 
@@ -55,7 +55,7 @@ Signature* sign(char* mess, Key* sKey){
 }
 
 char* signature_to_str ( Signature * sgn ) {
-    char* result = malloc(10*sgn-> size*sizeof(char)) ;
+    char* result = malloc(sgn->size*sizeof(char)) ;
     result [0]= '#' ;
     int pos = 1;
     char buffer[156];
@@ -98,16 +98,20 @@ Signature* str_to_signature( char * str ) {
 
 Protected* init_protected(Key* pKey, char* mess, Signature* sgn){
     Protected* res = (Protected*)malloc(sizeof(Protected));
-    res -> pKey = pKey; 
-    res -> mess = mess; 
-    res -> sgn = sgn;
+    res->pKey = pKey; 
+    res->mess = mess; 
+    res->sgn = sgn;
     return res; 
 }
 
 int verify(Protected* pr){
  /*retourne 1 si la Signature de pr correspond bien au message et à la personne contenue dans pr, 0 sinon*/
     long * tab = (pr->sgn)->content;
-    char * m = decrypt(tab, (pr->sgn)->size , (pr->pKey)->val, (pr->pKey)-> n);
+    char * m = decrypt(tab, (pr->sgn)->size , (pr->pKey)->val, (pr->pKey)->n);
+    if (m==NULL){
+        printf("erreur dans l'allocation de m dans verify\n");
+        exit(0);
+    }
     if (strcmp(pr->mess, m)==0){
         return 1;
     } else {
@@ -117,7 +121,7 @@ int verify(Protected* pr){
 }
 
 char* protected_to_str(Protected* pr){
-    char *res = (char *)malloc(sizeof(char)*256);
+    char *res = (char *)malloc(sizeof(char)*772);
     strcpy(res,"");
     strcat(res,key_to_str(pr->pKey));
     strcat(res," ");
@@ -130,39 +134,22 @@ char* protected_to_str(Protected* pr){
 
 
 Protected* str_to_protected(char* chaine){
-    Signature * sgn = (Signature*)malloc(sizeof(Signature));
-    char * mess = (char*)malloc(sizeof(char));
-    Key * pKey = (Key*)malloc(sizeof(Key));
-    
-    int i = 0;
-    char * chaine_courante = "";
-    while(chaine[i] != ' '){
-        chaine_courante+= chaine[i];
-        i++;
+
+    char key[256];
+    char mess[256];
+    char sgn[256];
+
+    if (sscanf(chaine, "%s %s %s", key, mess, sgn)!=3){
+        printf("erreur dans str_to_protected\n");
     }
-    chaine_courante+='\0';
-    pKey = str_to_key(chaine_courante);
-    
-    chaine_courante = "";
-    while(chaine[i] != ' '){
-        chaine_courante+= chaine[i];
-        i++;
-    }
-    
-    chaine_courante+='\0';
-    mess = chaine_courante;
-    
-    chaine_courante = "";
-    while(chaine[i] != '\0'){
-        chaine_courante+= chaine[i];
-        i++;
-    }
-    
-    chaine_courante+='\0';
-    sgn = str_to_signature(chaine_courante);
-    
-    Protected * res = init_protected(pKey, mess, sgn);
-    free(pKey);
-    return res;
+
+    printf("affichage de ce qui a été scanné : %s %s %s\n====", key, mess, sgn);
+    Key * k = str_to_key(key);
+    Signature * s = str_to_signature(sgn);
+    Protected * pr = init_protected(k,mess,s);
+    free(k);
+    free(s);
+    return pr;
+
 
 }

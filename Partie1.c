@@ -139,7 +139,7 @@ long *encrypt(char* chaine, long s, long n){
 }
 
 char* decrypt(long* crypted, int size, long u, long n ){
-	char* dechiffre = (char*)malloc(sizeof(char)*size);
+	char* dechiffre = (char*)malloc(sizeof(char)*(size+1));
 	if(dechiffre == NULL){
 		printf("Erreur malloc decrypt");
 	}
@@ -147,6 +147,6 @@ char* decrypt(long* crypted, int size, long u, long n ){
 	for (i = 0; i < size; i++){
 		dechiffre[i] = modpow(crypted[i], u, n); 
 	}
-	dechiffre[i] = '\0';
+	dechiffre[size+1] = '\0';
 	return dechiffre ;
 }

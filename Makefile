@@ -9,7 +9,7 @@ mainP1 : mainP1.o Partie1.o
 	$(CC) -o $@ $(CFLAGS) $^ -lm
 
 mainP2 : mainP2.o Partie1.o Partie2.o 
-	$(CC) -o $@ $(CFLAGS) $^ -lm
+	$(CC) -o -g $@ $(CFLAGS) $^ -lm
 
 mainP2_4 : mainP2_4.o Partie2_4.o Partie1.o Partie2.o
 	$(CC) -o $@ $(CFLAGS) $^ -lm

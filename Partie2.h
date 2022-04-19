@@ -15,6 +15,7 @@ typedef struct _Signature{
 
 typedef struct _Protected{
     Key* pKey; 
+    char * mess;
     Signature* sgn; 
 }Protected; 
 

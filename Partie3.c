@@ -5,7 +5,7 @@
 
 #include <time.h>
 
-#define TAILLE_MAX 10000
+#define TAILLE_MAX 256
 
 CellKey* create_cell_key(Key* key){
     CellKey* CK = (CellKey*)malloc(sizeof(CellKey));
@@ -111,37 +111,39 @@ CellProtected * ajout_en_tete(CellProtected * ldec, Protected * pr){
 CellProtected* read_protected(char * nomFichier){//A revoir 
     char buffer[TAILLE_MAX];
     FILE* f = fopen(nomFichier, "r");
-    CellProtected* ldec = NULL;
-    Protected* pr = (Protected*)malloc(sizeof(Protected));
-    char* mess =  (char*)malloc(sizeof(char));
-    char* pkey = (char*)malloc(sizeof(char));
-    char* sgn = (char*)malloc(sizeof(char));
-    long val; 
-    long n;
-    
+
     if(f == NULL){
         printf("Erreur lors de l'ouverture du fichier\n");
         exit(1);
     }
 
+      
+
+    CellProtected* res = (CellProtected*)malloc(sizeof(CellProtected));
+    if (res==NULL){
+        printf("probleme d'allocation res dans read_protected\n");
+    }
+
     while(fgets(buffer, TAILLE_MAX, f) != NULL){
-        Key *k = (Key*)malloc(sizeof(Key));
-        fscanf(f,"(%lx, %lx) %s %s", &val, &n, mess, sgn); 
-        init_key(k, val, n);
-        Signature* signature = str_to_signature(sgn);
-        pr = init_protected(k, mess, signature);
-        ldec = ajout_en_tete(ldec, pr);
+        char* chaine =  (char*)malloc(sizeof(char)*256);    
+        fscanf(f,"%s", chaine);   
+        res = ajout_en_tete(res, str_to_protected(chaine));
     }
     fclose(f);
-    return ldec;
+    return res;
 }
 
 
 void afficher_liste_dec(CellProtected * ldec){
     CellProtected * lcourant = ldec;
     while(lcourant!=NULL){
-        printf("%s\n", protected_to_str(lcourant->data));
-        lcourant = lcourant->next;
+        if (protected_to_str(lcourant->data)!=NULL){
+            printf("%s\n", protected_to_str(lcourant->data));
+            lcourant = lcourant->next;
+        } else {
+            printf("erreur dans afficher_liste_dec\n");
+        }       
+        
     }
 }
 
