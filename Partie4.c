@@ -1,14 +1,75 @@
 #include "Partie4.h"
 
-//Partie4
-//EXO7
+
+#define MAX 3000
 
 void ecriture_bloc(Block * block){
+    FILE *fb = fopen("bloc.txt", "w");
+    if(fb == NULL){
+        printf("Erreur d'ouvertur du fichier");
+        exit(1);
+    }
     
+    char *auteur = key_to_str(block-> author); 
+    CellProtected* cellpr = block-> votes;
+    unsigned char* h = block->hash;
+    unsigned char* prev_hash = block-> previous_hash; 
+    int proof = block-> nonce; 
+
+    fprintf(fb, "%s %s %s %d\n",auteur,h, prev_hash, proof); 
+    while(cellpr!=NULL){
+        char * str = protected_to_str(cellpr->data);
+        fprintf(fb,"%s\n", str);
+        cellpr = cellpr->next;
+        free(str);
+    }
+    free(auteur);
+    fclose(fb);
 }
 
+
 Block* lecture_bloc(char * nom_fichier){
+    char buffer[MAX];
     
+    FILE *f = fopen(nom_fichier, "r");
+
+    Block* b = (Block*)malloc(sizeof(Block));
+    Key* k = (Key*)malloc(sizeof(Key));
+    int val;
+    int n; 
+    int nonce; 
+    unsigned char hash[256];
+    unsigned char prev_hash[256];
+    CellProtected* votesCourant =NULL; 
+    CellProtected * votes = NULL; 
+    char cell[258];  
+ 
+    if(f == NULL){
+        printf("Erreur d'ouverture de fichier");
+        exit(1);
+    }
+
+    //PB : comment faire pour parcourir deux lignes !=
+    
+    while(fgets(buffer, MAX, f) != NULL){
+        Key* k = (Key*)malloc(sizeof(Key));
+        fscanf(f, "(%d, %d) %s, %s, %d\n", &n, &val, hash, prev_hash, &nonce);
+        init_key(k, val, n);
+        fscanf(f,"%s", cell); 
+        Protected* pr = str_to_protected(cell);
+        votesCourant = ajout_en_tete(votesCourant, pr); 
+    }
+ 
+    while(votesCourant){
+        ajout_en_tete(votes, votesCourant->data);
+        votesCourant= votesCourant->next;
+    }
+
+    b->author = k; 
+    b->hash = hash; 
+    b->previous_hash = prev_hash; 
+    b->nonce = nonce; 
+
 }
 
 char* block_to_str(Block* block){
@@ -32,28 +93,6 @@ char* block_to_str(Block* block){
     }
 
     return res;
-    
 }
 
-void compute_proof_of_work(Block *B, int d){
-    do {
-        
-    int i = 0;
-        B->nonce = i;
-        
-        char * s1 = block_to_str(B);
-        const char *s = (const char *)s1;
-        unsigned char * h  = SHA256 (s , strlen ( s ) , 0);
-        
-        //la valeur hachee du bloc commence par d 0 successifs si bool = 1 en sortie de boucle
-        int bool = 1;
-        for(int j = 0; j < d; j++){
-            if (d[j]!='0'){
-                bool = 0;
-                i = h;
-            }
-        }
-    
-    } while ( )
-}
- 
+

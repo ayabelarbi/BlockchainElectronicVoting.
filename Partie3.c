@@ -1,19 +1,17 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
-#include "Partie4.h"
+// #include "Partie4.h"
 #include "Partie2.h"
 #include "Partie3.h"
 #include "Partie1.h"
 
+#include <time.h>
 
 #define TAILLE_MAX 10000
 
 CellKey* create_cell_key(Key* key){
     CellKey* CK = (CellKey*)malloc(sizeof(CellKey));
-    
+    if(CK == NULL){
+        printf("Erreur malloc create_cell_key");
+    }
     CK->data = key; 
     CK->next = NULL;
     
@@ -34,6 +32,9 @@ CellKey* read_public_keys(char* nom_fichier){
     long val;
     long n;
     
+    if(k == NULL){
+        printf("Erreur malloc read_public_key");
+    }
     if(fk == NULL){
         printf("Erreur lors de l'ouverture du fichier\n");
         exit(1);
@@ -41,6 +42,11 @@ CellKey* read_public_keys(char* nom_fichier){
 
     while(fgets(buffer, TAILLE_MAX, fk) != NULL){
         Key* k = (Key*)malloc(sizeof(Key));
+
+        if(k == NULL){
+            printf("Erreur malloc key reas_public_key");
+            return NULL;
+        }
         fscanf(fk,"(%ld,%ld)", &val, &n);
         init_key(k, val, n);
         LCK = addKey(LCK, k);
@@ -86,6 +92,9 @@ void delete_list_keys(CellKey* LCK){
 
 CellProtected* create_cell_protected(Protected* pr){
     CellProtected * res = (CellProtected*)malloc(sizeof(CellProtected));
+    if(res == NULL){
+        printf("Erreur malloc create_cell_protected");
+    }
     res->data = pr;
     res->next = NULL;
     return res;
@@ -99,7 +108,7 @@ CellProtected * ajout_en_tete(CellProtected * ldec, Protected * pr){
 }
 
 
-CellProtected* read_protected(char * nomFichier){
+CellProtected* read_protected(char * nomFichier){//A revoir 
     char buffer[TAILLE_MAX];
     FILE* f = fopen(nomFichier, "r");
     CellProtected* ldec = NULL;
@@ -179,115 +188,162 @@ CellProtected* supr_sgn_non_valide(CellProtected * ldec){
 
 HashCell* create_hashcell(Key* key){
     HashCell *res = (HashCell*)malloc(sizeof(HashCell));
+    if(res == NULL){
+        printf("Erreur de malloc create_hashcell");
+    }
     res -> key = key; 
     res -> val = 0; 
     return res; 
 }
 
 int hash_function(Key* key, int size){
-    char * chaine = key_to_str(key);
-    long int h = *(encrypt(chaine, key->val, key->n)) % size;
-    printf("valeur de hash fonction : %ld", h);
-    return (int)h;
+    int ind = ((key->val) + (key ->n)) % size; 
+    return ind;
 }
 
 
 int identique(Key* k1, Key *k2){
-    if((k1->val == k2->val)&&(k1->n == k2->n)){ 
+    if((k1->val == k2->val) && (k1->n == k2->n)){ 
         return 1; 
     }else{
         return 0;
     }
 }
 
+// int find_position(HashTable*h , Key * key){
+    
+//     HashCell** tab = h ->tab; 
+//     int pos = hash_function(key, h->size);
+//     int i = 0;
+//     //si l'element a ete trouvé on retourne la position 
+//     if ((tab[pos]->key->val == key->val) &&(tab[pos]->key->n == key->n)){
+//         return pos; 
+//     }
+
+//     else { //sinon il retourne la position dans lequel il devrait être
+        
+//         while((tab[i] != NULL)){
+//             i++; 
+//         }
+//     }
+//     return i; 
+// }
+
+
 int find_position(HashTable* t, Key* key){
+
     if(key == NULL){
         printf("erreur, la clef est null\n");
-        exit(0); 
+        exit(1); 
     }
 
     HashCell ** tab = t->tab;
     int ind = hash_function(key, t->size);
-    printf("ind = %d\n", ind);
-    printf("t->size = %d",t->size);
-    int ind_courant = ind;
-
-    //tant que l'indice courant est < taille du tableau 
-    while(!(identique(tab[ind_courant]->key, key)) && (ind_courant == t->size)){
-        //si indentique(tab[ind_courant], key) 
-        if(identique(tab[ind_courant]->key, key)){
-            return ind_courant;
-        }else{
-            ind_courant++; 
+    if(t ->tab[ind] != NULL){
+        if ((tab[ind]->key-> val == key-> val) && (tab[ind]->key -> n == key-> n)){
+            return ind; 
+        } else {
+            for(int i = 0; i < t->size; i++){
+                if(t-> tab[(ind + i) % t->size] == NULL){
+                    return (ind + i) % t-> size; 
+                }
+            }
+        return -1; 
         }
+    }else {
+        return ind; 
     }
-    return ind; 
 }
-    // while((tab[ind_courant]->key->n != key->n )&&(tab[ind_courant]->key->val != key->val)&&(ind_courant==t->size)){
-    //     if ((tab[ind_courant]->key->n == key->n )&&(tab[ind_courant]->key->val == key->val)){
-    //         return ind_courant;
-    //     } else {
-    //         ind_courant++;
-    //     }
-    // }
-    // return ind;
 
-
-HashTable* create_hashtable(CellKey* keys, int size){
-    //On declare la table de hachage et les cellules
-    HashTable * t = (HashTable*)malloc(sizeof(HashTable));
-    HashCell ** tab = (HashCell **)malloc(sizeof(HashCell*));
-    t->size = size;
-    int i = 0; 
-    while(keys-> next != NULL){
-        // pos = find_position(t, keys ->data);
-        // h->tab[pos] = keys-> data; 
-        tab[i] = create_hashcell(keys->data); 
-        keys = keys-> next;
-        i++;   
+HashTable* create_hashtable(CellKey* keys, int size) {
+    /* crée et initialise une table de hachage de taille size contenant une cellule pour chaque clé de la liste chainée keys */
+    if (!keys) return NULL; 
+    
+    HashTable *hTable = (HashTable *) malloc (sizeof(HashTable)) ; 
+    hTable ->size = size ; 
+    CellKey *temp = keys; 
+    if (!hTable) {
+        printf ("Erreur d'allocation \n"); 
+        return NULL ;
     }
+  
+    // on cherche et insere chaque clé à sa position
+    do {
+        int i = find_position(hTable, keys->data);
+        hTable ->tab[i] = create_hashcell(keys ->data) ;  
+        temp = temp->next ; 
+    } while (temp) ; 
 
-    while(i<size){
-        tab[i] = NULL;
-            i++; 
-    }
-    t->tab = tab;
-    return t;
+    return hTable; 
+}
+
+
+// HashTable* create_hashtable(CellKey* keys, int size){
+//     //On declare la table de hachage et les cellules
+//     HashTable * t = (HashTable*)malloc(sizeof(HashTable));
+//     HashCell **tab = (HashCell **)malloc(sizeof(HashCell*));
+//     t->tab = tab; 
+//     t->size = size;
+//     int i = 0; 
+//     if(t == NULL && tab == NULL){
+//         printf("Erreur malloc ");
+//     }
+
+//     for(int j = 0 ; j< size; j++){
+//         tab[i] = NULL; 
+//     }
+
+//     //insertion des cles de la cellule keys
+//     while(keys){
+//         int pos = find_position(t, keys ->data);// position pour ajouter les clefs
+//         tab[pos] = create_hashcell(keys->data); // rajout des clefs dans la table
+//         keys = keys-> next;
+//         i++;
+//     }
+
+//     return t;
+// }
+
+void delete_hashcell(HashCell* hc){
+    free(hc->key); 
+    free(hc);
 }
 
 void delete_hashtable(HashTable* t){
-    HashCell ** tab = t->tab;
-    for(int i = 0; i< t->size; i++){
-        free(tab[i]);
+    for(int i = 0 ; i< t->size; i++){
+        delete_hashcell(t->tab[i]);
     }
-    free(tab);
+    free(t);
 }
 
 
-Key* compute_winner(CellProtected* decl, CellKey* candidates, CellKey* voters, int sizeC, int sizeV){
-    HashTable 
-    // creation de la table de hachage des candidats 
-    // création de la table de hachage des votants 
-    HashTable* HTC = create_hashtable(candidates, sizeC); 
-    HashTable* HTV = create_hashtable(voters, sizeV);
-    Key * winner = (Key*)malloc(sizeof(Key));
-    bool verifcondi = 0;
+// Key* compute_winner(CellProtected* decl, CellKey* candidates, CellKey* voters, int sizeC, int sizeV){
+//     HashTable 
+//     // creation de la table de hachage des candidats 
+//     // création de la table de hachage des votants 
+//     HashTable *HTC = create_hashtable(candidates, sizeC); 
+//     HashTable *HTV = create_hashtable(voters, sizeV);
+//     Key * winner = (Key*)malloc(sizeof(Key));
+//     int verifcondi = 0;
+//     int positionCandidates, positionVotant; 
 
-    while(decl != NULL){
-        Protected* DeclaCourante = decl -> data; 
-        int positionCandidates = find_position(HTC, candidates -> data); 
-        int positionVotant = find_position(HTV, voters -> data); 
-        char* keyVoters = key_to_str
+//     while(decl){
 
-        if((identique(HTV[positionVotant]-> key, DeclaCourante->pKey) &&(DeclaCourante->pKey-> val = 0) && (strcmp(DeclaCourante->mess, key_to_str(HTV[positionVotant]-> key)=0))){
-            verifcondi = 1; 
+//         Protected* DeclaCourante = decl -> data; 
+//         positionCandidates = find_position(HTC, candidates -> data); 
+//         positionVotant = find_position(HTV, voters -> data); 
+//         char* keyVoters = str_to_key(decl ->data -> mess); 
+//         // a finir 
+//         if(HTV -> ta)
 
-        }verifcondi = 0; 
-        DeclaCourante = decl->next; 
+//         //vérification de toute les conditions 
+//         if((identique(HTV[positionVotant]-> key, DeclaCourante->pKey) &&(DeclaCourante->pKey-> val = 0) && (strcmp(DeclaCourante->mess, key_to_str(HTV[positionVotant]-> key)=0))){
+//             verifcondi = 1; 
+
+//         }verifcondi = 0; 
+//         DeclaCourante = decl->next; 
 
  
-    }
-
-
+//     }
     
-}
+// }

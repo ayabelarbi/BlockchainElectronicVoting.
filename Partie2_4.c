@@ -1,11 +1,5 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
-#include "Partie2.h"
-#include "Partie1.h"
 #include "Partie2_4.h"
+#include <time.h>
 
 #define DATA_SIZE 10000
 
@@ -67,8 +61,11 @@ void generate_random_data(int nv, int nc){
 		
 		fprintf(fd,"(%ld,%ld) %s %s\n", tabkp[i]->val, tabkp[i]->n, mess, signature_to_str(s));
 	}
-
+	free(tabkp); 
+	free(tabks); 
+	free(tabC); 
 	fclose(fk);
 	fclose(fc);
 	fclose(fd);
+
 } 

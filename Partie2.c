@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
 #include "Partie2.h"
 #include "Partie1.h"
 
@@ -117,8 +112,7 @@ int verify(Protected* pr){
         return 1;
     } else {
         printf("Erreur dans verify!! \n");
-        return 0;
-        
+        return 0;      
     }
 }
 
@@ -130,7 +124,6 @@ char* protected_to_str(Protected* pr){
     strcat(res,pr->mess);
     strcat(res," ");
     strcat(res,signature_to_str(pr->sgn));
-
     return res;
 }
 
@@ -147,7 +140,6 @@ Protected* str_to_protected(char* chaine){
         chaine_courante+= chaine[i];
         i++;
     }
-    
     chaine_courante+='\0';
     pKey = str_to_key(chaine_courante);
     
@@ -170,6 +162,7 @@ Protected* str_to_protected(char* chaine){
     sgn = str_to_signature(chaine_courante);
     
     Protected * res = init_protected(pKey, mess, sgn);
+    free(pKey);
     return res;
 
 }

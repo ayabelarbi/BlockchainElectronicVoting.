@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
+#include "Partie1.h"
 
 int is_primitive_naive(long int p){
 	for(int i = 3 ; i < p - 1 ; i++){
@@ -127,7 +124,12 @@ void generate_key_values(long p, long q, long *n, long *s,long *u){
 }
 
 long *encrypt(char* chaine, long s, long n){
-    long * res = (long *)malloc(sizeof(long)*strlen(chaine));
+	int lc = strlen(chaine);
+    long * res = (long *)malloc(sizeof(long)*lc);
+	if (res == NULL){
+		printf("Erreur malloc encrypt");
+	}
+
     int i = 0;
     while(chaine[i]!='\0'){
         res[i] = modpow(chaine[i], s, n);
@@ -137,8 +139,11 @@ long *encrypt(char* chaine, long s, long n){
 }
 
 char* decrypt(long* crypted, int size, long u, long n ){
-	char* dechiffre = (char*)malloc(size * sizeof(char));
-	int i;
+	char* dechiffre = (char*)malloc(sizeof(char)*size);
+	if(dechiffre == NULL){
+		printf("Erreur malloc decrypt");
+	}
+ 	int i;
 	for (i = 0; i < size; i++){
 		dechiffre[i] = modpow(crypted[i], u, n); 
 	}

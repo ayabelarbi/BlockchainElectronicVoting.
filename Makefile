@@ -1,15 +1,36 @@
 CC = gcc
 CFLAGS = -g -Wall -Wextra -pedantic
 
-PROGRAMS = main
+PROGRAMS = mainP1 mainP2 mainP3 mainP4 mainP2_4
 
 all : $(PROGRAMS)
 
-main : main.o Partie1.o Partie2.o Partie2_4.o Partie3.o Partie4.à 
+mainP1 : mainP1.o Partie1.o
 	$(CC) -o $@ $(CFLAGS) $^ -lm
 
-main.o : main.c
-	gcc -c main.c
+mainP2 : mainP2.o Partie1.o Partie2.o 
+	$(CC) -o $@ $(CFLAGS) $^ -lm
+
+mainP2_4 : mainP2_4.o Partie2_4.o Partie1.o Partie2.o
+	$(CC) -o $@ $(CFLAGS) $^ -lm
+
+mainP3 : mainP3.o Partie1.o Partie2.o Partie3.o
+	$(CC) -o $@ $(CFLAGS) $^ -lm
+	
+mainP4 : mainP4.o Partie1.o Partie2.o Partie3.o Partie4.o 
+	$(CC) -o $@ $(CFLAGS) $^ -lm -lssl -lcrypto
+
+mainP1.o : mainP1.c
+	gcc -c mainP1.c
+
+mainP2.o : mainP2.c
+	gcc -c mainP2.c
+
+mainP3.o : mainP3.c
+	gcc -c mainP3.c
+
+mainP4.o : mainP4.c
+	gcc -c mainP4.c
 
 Partie1.o : Partie1.c Partie1.h
 	gcc -c Partie1.c 
