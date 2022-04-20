@@ -20,12 +20,13 @@ void generate_random_data(int nv, int nc){
 	
 	Key **tabkp = (Key**)malloc(nv*sizeof(Key*)); //tableau de pointeurs sur les cles publiques
 	Key **tabks = (Key**)malloc(nv*sizeof(Key*));  //tableau de pointeurs sur les cles secretes
-	Key **tabC = (Key**)malloc(nc*sizeof(Key*));  // tableau de pointeurs sur les cles publiques des citoyens
+	Key **tabC = (Key**)malloc(nc*sizeof(Key*));  // tableau de pointeurs sur les cles publiques des candidats
 	if ((tabkp == NULL)||(tabks==NULL)||(tabC==NULL)) {
 		printf("erreur malloc tab pointeurs sur cles dans generate_random_data\n");
 	}
 	
-	  
+	 
+	//ecriture des cles dans key.txt et remplissage des tableaux de pointeurs de cles
 	for(int i = 0; i <nv; i++){
 		Key* pkey = (Key*)malloc(sizeof(Key));
 		Key* skey = (Key*)malloc(sizeof(Key));
@@ -41,25 +42,41 @@ void generate_random_data(int nv, int nc){
 		
 		tabkp[i]= pkey;
 		tabks[i] = skey;
+		free(pkey);
+		free(skey);
 	}
 	
+	//ecriture des candidats dans candidate.txt et remplissage de tabC
 	for(int i = 0; i < nc; i++){
 		int k= rand()%nv;
 		
-	    fprintf(fc,"Cle publique du candidat (%ld,%ld)\n", tabkp[k]->val, tabkp[k]->n);
-	    Key* pkeyC = (Key*)malloc(sizeof(Key));
+		if (fprintf(fc,"(%lx,%lx)\n", tabkp[k]->val, tabkp[k]->n)!=2){
+			printf("erreur fprintf dans generate_random_data\n");
+	   	}
+		Key* pkeyC = (Key*)malloc(sizeof(Key));
+		if (pkeyC==NULL){
+			printf("erreur malloc cle de candidat dans generate_random_data\n");
+		}
 		init_key(pkeyC, tabkp[k]->val, tabkp[k]->n); 
 		tabC[i] = pkeyC; 
+		free(pkeyC);
 	}
-	char * keyd; 
+	
+	//ecriture des declarations dans declaration.txt
 	for(int i = 0; i < nv; i++){
 		int indice = rand()%nc;
-		Protected *pr; char* mess; Signature* s; 
+		Protected *pr; 
+		char* mess; 
+		Signature* s; 
 		mess = key_to_str(tabC[indice]);
-		pr = init_protected(tabkp[i], mess , s );
+		pr = init_protected(tabkp[i], mess , s);
 		s = sign(mess, tabks[i]);
 		
-		fprintf(fd,"(%ld,%ld) %s %s\n", tabkp[i]->val, tabkp[i]->n, mess, signature_to_str(s));
+		if (fprintf(fd,"(%lx,%lx) %s %s\n", tabkp[i]->val, tabkp[i]->n, mess, signature_to_str(s))!=4){
+			printf("erreur fprintf dans generate_random_data\n");
+		}
+		free(s);
+		free(pr);
 	}
 	free(tabkp); 
 	free(tabks); 
