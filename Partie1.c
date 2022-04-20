@@ -108,6 +108,7 @@ long random_prime_number(int lowSize, int upSize, int k){
 	return p;
 }
 
+/* retourne le PGCD (s,t) */
 long extended_gcd ( long s , long t , long *u , long * v ) {
 	if ( s == 0) {
 		*u = 0;
