@@ -3,42 +3,42 @@
 
 #define DATA_SIZE 10000
 
-// int is_in(Key** tabKey, Key * key, int taille){
-// 	if (tabKey == NULL){
-// 		return 0;
-// 	}
-// 	for(int i = 0; i <taille; i++ ){
-// 		if (tabKey[i]->val == key->val){
-// 			return 1;
-// 		}
-// 	}
-// 	return 0;
-// }
-
 void generate_random_data(int nv, int nc){
 	srand(time(NULL));
+	
 	char buffer[DATA_SIZE];
 	FILE *fk = fopen("key.txt", "w");
 	FILE *fc = fopen("candidates.txt","w");
 	FILE *fd = fopen("declaration.txt", "w");
-	char mess[256];
-	
-	Key **tabkp = (Key**)malloc(nv*sizeof(Key*)); 
-	Key **tabks = (Key**)malloc(nv*sizeof(Key*)); 
-	Key **tabC = (Key**)malloc(nc*sizeof(Key*));
 	
 	if(fk == NULL || fd == NULL || fc == NULL ){
 		printf("Erreur d'ouverture de fichier");
 		exit(EXIT_FAILURE);
 	}
+	
+	char mess[256];
+	
+	Key **tabkp = (Key**)malloc(nv*sizeof(Key*)); //tableau de pointeurs sur les cles publiques
+	Key **tabks = (Key**)malloc(nv*sizeof(Key*));  //tableau de pointeurs sur les cles secretes
+	Key **tabC = (Key**)malloc(nc*sizeof(Key*));  // tableau de pointeurs sur les cles publiques des citoyens
+	if ((tabkp == NULL)||(tabks==NULL)||(tabC==NULL)) {
+		printf("erreur malloc tab pointeurs sur cles dans generate_random_data\n");
+	}
+	
 	  
 	for(int i = 0; i <nv; i++){
 		Key* pkey = (Key*)malloc(sizeof(Key));
 		Key* skey = (Key*)malloc(sizeof(Key));
+		if ((pkey==NULL)||(skey==NULL)){
+			printf("erreur malloc cles dans generate_random_data\n"); 	
+		}
+		
 		init_pair_keys(pkey, skey, 3, 7);
 		
-		//fprintf(fk ,"Citoyen n° %d" ,i+1);
-		fprintf(fk, "(%ld,%ld), (%ld,%ld)\n", skey->val,skey->n,pkey->val,pkey->n);
+		if (fprintf(fk, "(%ld,%ld), (%ld,%ld)\n", skey->val,skey->n,pkey->val,pkey->n)!=4){
+			printf("erreur dans le fprintf de generate_random_data\n");
+		}
+		
 		tabkp[i]= pkey;
 		tabks[i] = skey;
 	}
