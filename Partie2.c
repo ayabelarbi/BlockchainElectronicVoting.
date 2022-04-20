@@ -2,11 +2,14 @@
 #include "Partie1.h"
 
 // LES CLEFS 
+
+/*initialisation de cle*/
 void init_key(Key* key, long val, long n){
-    key -> val = val; 
-    key -> n = n ; 
+    key->val = val; 
+    key->n = n ; 
 }
 
+/*initialisation d'une paire de cles*/
 void init_pair_keys(Key* pKey, Key* sKey, long low_size, long up_size){
     long p = random_prime_number(low_size, up_size, 5000);
     long q = random_prime_number(low_size, up_size, 5000);
@@ -15,6 +18,7 @@ void init_pair_keys(Key* pKey, Key* sKey, long low_size, long up_size){
     }
     long n , s , u, t ;
     generate_key_values (p ,q ,&n ,&s ,&u ) ;
+    
     //Pour avoir des cles positives :
     if (u < 0) {
         t = (p -1) *( q -1) ;
@@ -24,36 +28,56 @@ void init_pair_keys(Key* pKey, Key* sKey, long low_size, long up_size){
     init_key(sKey,u,n);
 }
 
-//LA SIGNATURE 
+/* revoie la chaine de caractere qui represente la cle*/
 char* key_to_str(Key* key){
     char* buffer = (char*)malloc(sizeof(char)*256); 
-    sprintf(buffer,"(%ld,%ld)", key-> val, key -> n); 
+    if (buffer == NULL){
+        printf("erreur malloc key_to_str\n");
+    }   
+     
+    if (sprintf(buffer,"(%lx,%lx)", key->val, key->n)!=2){
+        printf("erreur dans sprintf de key_to_str\n");
+    }
     return buffer;
 }
 
+/* renvoie la cle representee par la chaine de caractere */
 Key* str_to_key(char* str){
     Key* res = (Key*)malloc(sizeof(Key));
+    if (res == NULL){
+        printf("erreur malloc str_to_key\n");
+    }
     long val; 
     long n; 
-    sscanf(str, "(%lx, %lx)", &val, &n); 
+   
+    if (sscanf(str, "(%lx, %lx)", &val, &n)!=2){
+        printf("erreur dans sscanf de str_to_key\n");
+    }
     init_key(res, val, n); 
     return res;
 }
 
+//LA SIGNATURE
 
+/*alloue et initialise une signature avec le tableau de long content*/
 Signature* init_signature(long* content, int size){
     Signature* res = (Signature*)malloc(sizeof(Signature));
+    if (res == NULL){
+        printf("erreur malloc init_signature\n");   
+    }
     res->content = content;
     res->size = size; 
     return res; 
 }
 
+/* renvoie signature : le message mess crypté avec la cle secrete */
 Signature* sign(char* mess, Key* sKey){
-    long* content = encrypt(mess, sKey ->val, sKey -> n); 
-    Signature* res = init_signature(content, strlen(mess)); // mess ou content ?? 
+    long* content = encrypt(mess, sKey->val, sKey-> n); 
+    Signature* res = init_signature(content, strlen(mess)-1);
     return res; 
 }
 
+/* renvoie la chaine de caractere qui represente la signature */
 char* signature_to_str ( Signature * sgn ) {
     char* result = malloc(sgn->size*sizeof(char)) ;
     result [0]= '#' ;
@@ -73,6 +97,7 @@ char* signature_to_str ( Signature * sgn ) {
     return result ;
 }
 
+/* renvoie la signature representee par la chaine de caractere */
 Signature* str_to_signature( char * str ) {
     int len = strlen(str) ;
     long* content = ( long *)malloc(sizeof(long)*len ) ;
@@ -96,16 +121,22 @@ Signature* str_to_signature( char * str ) {
     return init_signature(content , num ) ;
 }
 
+//LES DECLARATIONS
+
+/* alloue et initialise une declaration */
 Protected* init_protected(Key* pKey, char* mess, Signature* sgn){
     Protected* res = (Protected*)malloc(sizeof(Protected));
+    if (res == NULL){
+        printf("erreur malloc init_protected\n");
+    }
     res->pKey = pKey; 
     res->mess = mess; 
     res->sgn = sgn;
     return res; 
 }
 
+/*retourne 1 si la Signature de pr correspond bien au message et à la personne contenue dans pr, 0 sinon*/
 int verify(Protected* pr){
- /*retourne 1 si la Signature de pr correspond bien au message et à la personne contenue dans pr, 0 sinon*/
     long * tab = (pr->sgn)->content;
     char * m = decrypt(tab, (pr->sgn)->size , (pr->pKey)->val, (pr->pKey)->n);
     if (m==NULL){
@@ -120,8 +151,12 @@ int verify(Protected* pr){
     }
 }
 
+/* renvoie la chaine de caractere representant la declaration */
 char* protected_to_str(Protected* pr){
     char *res = (char *)malloc(sizeof(char)*772);
+    if (res == NULL){
+        printf("erreur malloc protected_to_str\n");   
+    }
     strcpy(res,"");
     strcat(res,key_to_str(pr->pKey));
     strcat(res," ");
@@ -131,8 +166,7 @@ char* protected_to_str(Protected* pr){
     return res;
 }
 
-
-
+/*renvoie la delcaration representee par la chaine de caractere */
 Protected* str_to_protected(char* chaine){
 
     char key[256];
@@ -140,16 +174,15 @@ Protected* str_to_protected(char* chaine){
     char sgn[256];
 
     if (sscanf(chaine, "%s %s %s", key, mess, sgn)!=3){
-        printf("erreur dans str_to_protected\n");
+        printf("erreur dans le sscanf de str_to_protected\n");
     }
 
-    printf("affichage de ce qui a été scanné : %s %s %s\n====", key, mess, sgn);
+    printf("affichage de ce qui a été scanné : %s %s %s\n", key, mess, sgn);
     Key * k = str_to_key(key);
     Signature * s = str_to_signature(sgn);
     Protected * pr = init_protected(k,mess,s);
     free(k);
     free(s);
     return pr;
-
 
 }
