@@ -15,7 +15,7 @@ typedef struct _Signature{
 
 typedef struct _Protected{
     Key* pKey; 
-    char * mess;
+    char * mess; //declaration de vote, key_to_str(pKeyC)
     Signature* sgn; 
 }Protected; 
 
