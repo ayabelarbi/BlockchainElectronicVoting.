@@ -8,14 +8,14 @@ all : $(PROGRAMS)
 mainP1 : mainP1.o Partie1.o
 	$(CC) -o $@ $(CFLAGS) $^ -lm
 
-mainP2 : mainP2.o Partie1.o Partie2.o 
-	$(CC) -o -g $@ $(CFLAGS) $^ -lm
+mainP2 : mainP2.o Partie1.o Partie2.o Partie2_4.o 
+	$(CC) -o $@ $(CFLAGS) $^ -lm
 
 mainP2_4 : mainP2_4.o Partie2_4.o Partie1.o Partie2.o
 	$(CC) -o $@ $(CFLAGS) $^ -lm
 
 mainP3 : mainP3.o Partie1.o Partie2.o Partie3.o
-	$(CC) -o $@ $(CFLAGS) $^ -lm
+	$(CC) -g -o $@ $(CFLAGS) $^ -lm
 	
 mainP4 : mainP4.o Partie1.o Partie2.o Partie3.o Partie4.o 
 	$(CC) -o $@ $(CFLAGS) $^ -lm -lssl -lcrypto

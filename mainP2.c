@@ -21,9 +21,9 @@ int main(){
     Key * pKey = malloc( sizeof ( Key ) ) ;
     Key * sKey = malloc( sizeof ( Key ) ) ;
     init_pair_keys( pKey , sKey ,3 ,7) ;
-    printf ( "pKey : %lx , %lx \n" , pKey -> val , pKey -> n ) ;
-    printf ( "sKey : %lx , %lx \n" , sKey -> val , sKey -> n ) ;
-    
+    printf ( "pKey : %lx , %lx \n", pKey -> val , pKey -> n ) ;
+    printf ( "sKey : %lx , %lx \n", sKey -> val , sKey -> n ) ;
+          
     //Testing Key Serialization
     char * chaine = key_to_str(pKey) ;
     
@@ -49,21 +49,23 @@ int main(){
     print_long_vector(sgn -> content , sgn -> size ) ;
     
     //Testing protected:
-    Protected * pr = init_protected(pKey , mess , sgn ) ;
+    Protected * pr = init_protected(pKey, mess , sgn ) ;
     
     //Verification:
     if (verify(pr)) {
-        printf ("Signature valide \n" ) ;
+        printf ("Signature valide \n\n" ) ;
     }else {
-        printf( "Signature non valide \n" ) ; 
+        printf( "Signature non valide\n\n" ) ; 
     }
     
     chaine = protected_to_str(pr) ;
     printf("protected to str : %s \n" , chaine ) ;
     pr = str_to_protected(chaine) ;
-    printf ("str to protected : %s %s %s \n" , key_to_str( pr -> pKey ) ,pr -> mess, signature_to_str(pr -> sgn )) ;
-    printf("---- FIN DE LA PARTIE 2 ----\n\n");
+    printf ("str to protected : ");
+    printf("%s %s %s\n", key_to_str( pr->pKey ), pr->mess,signature_to_str(pr->sgn));
+    
 
+    printf("---- FIN DE LA PARTIE 2 ----\n\n");
     
     free(k);
     free(pKey);

@@ -73,7 +73,7 @@ Signature* init_signature(long* content, int size){
     return res; 
 }
 
-/* renvoie signature : le message mess crypté avec la cle secrete */
+/* renvoie signature : le message mess crypté avec la cle secrete du votant */
 Signature* sign(char* mess, Key* sKey){
     long* content = encrypt(mess, sKey->val, sKey-> n); 
     Signature* res = init_signature(content, strlen(mess));
@@ -161,15 +161,15 @@ char* protected_to_str(Protected* pr){
     char * s = signature_to_str(pr->sgn);
     int size =  strlen(key)+strlen(pr->mess)+strlen(s)+3;
     
-    char *res = (char *)malloc(size*sizeof(char));
+    char *res = (char *)malloc(256*sizeof(char));
 
     if (res == NULL){
         printf("erreur malloc protected_to_str\n");   
     }
 
-    printf("key = %s\n", key); 
-    printf("mess = %s\n", pr->mess);
-    printf("signature = %s\n", s);
+    // printf("key = %s\n", key); 
+    // printf("mess = %s\n", pr->mess);
+    // printf("signature = %s\n", s);
     strcpy(res,"");
     strcat(res,key);
     strcat(res," ");

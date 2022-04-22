@@ -103,11 +103,21 @@ CellProtected* create_cell_protected(Protected* pr){
 }
 
 
-CellProtected * ajout_en_tete(CellProtected * ldec, Protected * pr){
-    CellProtected * res = create_cell_protected(pr);
-    res->next = ldec; 
-    return res; 
+CellProtected* ajout_en_tete(CellProtected * ldec, Protected * pr){
+    CellProtected * cell_courante = create_cell_protected(pr);
+    if(cell_courante == NULL){
+        printf("erreur d'allocation de memoire dans ajout_en_tete");
+        exit(1);
+    }
+    cell_courante->next = ldec;
+    return cell_courante;  
 }
+// CellProtected* ajout_en_fin(CellProtected * ldecl, Protected* pr){
+//     CellProtected * newcell = (CellProtected*)malloc(sizeof(CellProtected));
+//     newcell->data = ldecl; 
+//     newcell->next = pr; 
+//     return newcell
+// }
 
 
 CellProtected* read_protected(char * nomFichier){//A revoir 
@@ -120,26 +130,32 @@ CellProtected* read_protected(char * nomFichier){//A revoir
     }
 
     CellProtected* res = (CellProtected*)malloc(sizeof(CellProtected));
-    if (res==NULL){
-        printf("probleme d'allocation res dans read_protected\n");
-    }
+        if (res==NULL){
+            printf("probleme d'allocation res dans read_protected\n");
+        } 
  
-    while(fgets(buffer, TAILLE_MAX, f) != NULL){   
-     
-        res = ajout_en_tete(res, str_to_protected(buffer));
+    while(fgets(buffer, TAILLE_MAX, f) != NULL){
+        Protected* pr_courant= str_to_protected(buffer);
+        res = ajout_en_tete(res, pr_courant);
+        printf("res ->data = %s\n", protected_to_str(res->data)); 
+        
+        //res = res ->next;   
     }
-
+    printf("\n");
+    afficher_liste_dec(res);
+    printf("\n");
     fclose(f);
     return res;
 }
 
 
 void afficher_liste_dec(CellProtected * ldec){
-    CellProtected * lcourant = ldec; 
-    while(lcourant!=NULL){
-        if (protected_to_str(lcourant->data)!=NULL){
-            printf("%s\n", protected_to_str(lcourant->data));
-            lcourant = lcourant->next;
+    //CellProtected * lcourant; 
+    char * prtostr = protected_to_str(ldec->data);
+    while(ldec!=NULL){
+        if (prtostr!=NULL){
+            printf("%s\n", prtostr);
+            ldec = ldec->next;
         } else {
             printf("erreur dans afficher_liste_dec\n");
         }       
@@ -167,6 +183,7 @@ void delete_chain(CellProtected* ldec){
     } else {
         printf("erreur dans la supression de la liste\n");
     }  
+
 }
 
 
@@ -213,29 +230,68 @@ int identique(Key* k1, Key *k2){
 }
 
 
+// int find_position(HashTable* t, Key* key){
+//     printf("je rentre dans la fonction\n");
+//     if(key == NULL){
+//         printf("erreur, la clef est null\n");
+//         exit(1); 
+//     }
+
+//     HashCell ** tab = t->tab;
+//     int ind = hash_function(key, t->size);
+//     printf("ind = %d\n", ind);
+//     int cpt = 0;
+//     int ind_courant = ind; 
+
+
+//     while((t ->tab[ind_courant] != NULL)&&(cpt!=t->size)){ //tant que le tableau est parcouru 
+//         printf("indice courant = %d\n", ind_courant);
+//         if ((tab[ind_courant]->key-> val == key-> val) && (tab[ind_courant]->key -> n == key-> n)){
+//             printf("j'ai trouve la cle a l'indice : %d\n", ind_courant);
+//             return ind_courant; 
+//         } 
+//         else {
+//             printf("je passe if2 et ind_courant incremente\n");
+//             ind_courant++; //on augmente l'indice jusqu'a trouver une place a la valeur
+//             cpt ++;   
+//         }
+//         if (cpt >= t->size){
+//             printf("je passe if3 : jarrive a la fin du tableau ind_courant repasse a 0\n");
+//             ind_courant = 0; 
+//         }
+          
+//     }return ind_courant;// on le retourne a la position dans lequel il devrait être
+// }
+
 int find_position(HashTable* t, Key* key){
-
-    if(key == NULL){
-        printf("erreur, la clef est null\n");
-        exit(1); 
-    }
-
+    printf("je rentre dans la fonction \n");
     HashCell ** tab = t->tab;
-    int ind = hash_function(key, t->size);
-    int ind_courant = ind; 
+    int size = t->size;
 
-    if((t ->tab[ind_courant] != NULL)&&(ind != ind_courant -1)){ //tant que le tableau est parcouru 
-        if ((tab[ind]->key-> val == key-> val) && (tab[ind]->key -> n == key-> n)){
-            return ind; 
+    int ind = hash_function(key, size);
+    printf("ind = %d\n", ind);
+    int ind_courant = ind;
+    int cpt = 0;
+
+    while ( (cpt!=size)  ){
+        printf("je rentre dans le while, ind_courant = %d\n", ind_courant);
+        Key * cle_courante = tab[ind_courant]->key;
+        if (tab[ind_courant]!=NULL){
+            return ind_courant;
+        }
+        if ((cle_courante->val == key->val)&&(cle_courante->n == key->n)){
+            return ind_courant;
+        } else if (ind_courant+1 == size) {
+            ind_courant = 0;
+            cpt++;
         } else {
-            ind++; //on augmente l'indice jusqu'a trouver une place a la valeure
+            ind_courant++;
+            cpt++;
         }
-
-        if (ind_courant >= t->size){
-            ind_courant = 0; 
-        }
-            
-    }return ind_courant;
+    } 
+    printf("plus de place\n");
+    
+    exit(0);
 }
 
 HashTable* create_hashtable(CellKey* keys, int size) {

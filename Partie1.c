@@ -8,7 +8,7 @@ int is_primitive_naive(long int p){
 		    return 0; 
 		}
 	}
-	printf("Le nombre %ld est premier \n", p)
+	printf("Le nombre %ld est premier \n", p);
 	return 1; 
 }
 
@@ -93,7 +93,7 @@ int is_prime_miller ( long p , int k ) {
 	return 1;
 }
 
-/* retourne un nombre premier de taille comprise entre low_size et up_size */:
+/* retourne un nombre premier de taille comprise entre low_size et up_size */
 long random_prime_number(int lowSize, int upSize, int k){
 	long max = pow(2, lowSize);
 	long min = pow(2,upSize);
