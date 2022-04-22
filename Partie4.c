@@ -95,4 +95,23 @@ char* block_to_str(Block* block){
     return res;
 }
 
+char * str_hache(char * chaine){
+
+    unsigned int int_tmp;
+    unsigned char * str_tmp = (unsigned char*)malloc(sizeof(unsigned char)*4);
+    unsigned char * res = (unsigned char*)malloc(sizeof(unsigned char)*(strlen(chaine)*4));
+    strcat(res, "");
+    int ind_res = 0;
+    int k = 0;
+    for(int i = 0; i< strlen(chaine); i++){
+        sscanf(&chaine[i], "%02x",&int_tmp);
+        *str_tmp = int_tmp;
+        strcat(res, str_tmp);
+        printf("%s\n", res);
+
+    }
+    strcat(res, "\0");
+    return res;
+}
+
 
