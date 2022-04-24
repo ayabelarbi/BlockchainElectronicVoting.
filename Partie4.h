@@ -15,8 +15,8 @@ typedef struct block {
 void ecriture_bloc(Block * block);
 Block* lecture_bloc(char * nom_fichier); 
 char* block_to_str(Block* block); 
-unsigned char * str_hache(char * chaine);
+char * hash_to_str(unsigned char * s);
 void compute_proof_of_work(Block * B, int d);
-
+int verify_block(Block * b, int d);
 
 #endif
