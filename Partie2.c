@@ -30,18 +30,21 @@ void init_pair_keys(Key* pKey, Key* sKey, long low_size, long up_size){
 
 /* revoie la chaine de caractere qui represente la cle*/
 char* key_to_str(Key* key){
-    
-    if(key ==NULL){
+    char* str = (char*)malloc(sizeof(char)*256);
+    if(str == NULL){
+        printf("la chaine est vide dans key_to_str");
+        exit(1);
+    }
+
+    if(key == NULL){
         printf("Clef vide dans key_to_str");
         exit(1);
     }
 
     char buffer[256];
-    char * res; 
-    sprintf(buffer,"(%lx,%lx)", key->val, key->n); 
-
-    res = strdup(buffer);
-    return res;
+    str = strdup(buffer);
+    sprintf(str,"(%lx,%lx)", key->val, key->n);
+    return str;
 }
 
 /* renvoie la cle representee par la chaine de caractere */
@@ -158,10 +161,17 @@ int verify(Protected* pr){
 char* protected_to_str(Protected* pr){
     
     char * key = key_to_str(pr->pKey); 
+    if(key == NULL){
+        printf("erreur clef vide dans protected_to_str");
+    }
     char * s = signature_to_str(pr->sgn);
+    if(s == NULL){
+        printf("erreur signature vide dans protected_to_str");
+        
+    }
     int size =  strlen(key)+strlen(pr->mess)+strlen(s)+3;
     
-    char *res = (char *)malloc(256*sizeof(char));
+    char *res = (char *)malloc(size*sizeof(char));
 
     if (res == NULL){
         printf("erreur malloc protected_to_str\n");   
@@ -176,25 +186,11 @@ char* protected_to_str(Protected* pr){
     strcat(res,pr->mess);
     strcat(res," ");
     strcat(res, s);
+    strcat(res,"");
+    free(key);
+    free(s);
     return res;
 }
-
-// char* protected_to_str(Protected* protected){
-
-// 	/*On récupère les chaines de caractère de la clé et de la signature*/
-// 	char* cle = key_to_str(protected->pKey);
-// 	char* signature = signature_to_str(protected->sgn);
-
-// 	/*On récupère la taille à allouer et on fait l'allocation (les chaînes, trois espaces et le caractère d'arrêt)*/
-// 	int taille_allocation = strlen(cle)+strlen(protected->mess)+strlen(signature)+3;
-// 	char * res = (char*) malloc(taille_allocation*sizeof(char));
-
-// 	sprintf(res,"%s %s %s",cle,protected->mess,signature);
-// 	free(cle);
-// 	free(signature);
-
-// 	return res;
-// }
 
 
 /*renvoie la delcaration representee par la chaine de caractere */
