@@ -1,7 +1,8 @@
 #include "Partie4.h"
-
+#include <openssl/sha.h>
 
 #define MAX 3000
+
 
 void ecriture_bloc(Block * block){
     FILE *fb = fopen("bloc.txt", "w");
@@ -72,108 +73,128 @@ Block* lecture_bloc(char * nom_fichier){
 
 }
 
+
+/*retourne la chaine de caractere representant le bloc*/
 char* block_to_str(Block* block){
-    char *res = (char *)malloc(sizeof(char)*256);
-    strcpy(res,"");
-    strcat(res,key_to_str(block->author));
-    strcat(res," ");
-    strcat(res,block->previous_hash);
-    strcat(res," ");
+
+    //calcul de la taille de la chaine 
+    int size = strlen(key_to_str(block->author)) + 1;
     
-    char s[30];
-    sprintf(s, "%d", block->nonce);
-    strcat(res, s);
-    strcat(res, "\n");
+    size = size + SHA256_DIGEST_LENGTH*2 + 1; 
     
     CellProtected * votes = block->votes;
     while(votes){
+        size = size + strlen(protected_to_str(votes->data)) + 1;
+        votes = votes->next;
+        
+    }
+
+    double nb_chiffres;
+    if (block->nonce == 0){
+        nb_chiffres = 1;
+    } else {
+        nb_chiffres = log10( (double)(block->nonce));
+    }
+    
+    size = size + (int)(nb_chiffres) + 2;
+
+    //printf("size = %d\n", size);
+
+    //creation de la chaine
+    char *res = (char *)malloc(sizeof(char)*size);
+    strcpy(res,"");
+
+    strcat(res,key_to_str(block->author));
+
+    res[strlen(res)]= '\n';
+    res[strlen(res)+1]= '\0';
+
+    strcat(res,hash_to_str(block->previous_hash));
+    res[strlen(res)]= '\n';
+    res[strlen(res)+1]= '\0';
+
+    votes = block->votes;
+    while(votes){
         strcat(res, protected_to_str(votes->data));
-        strcat(res," ");
+        res[strlen(res)]= '\n';
+        res[strlen(res)+1]= '\0';
         votes = votes->next;
     }
 
+    char * str_nonce = (char*)malloc(sizeof(char)*round(nb_chiffres) + 2);
+    sprintf(str_nonce, "%d", block->nonce);
+    strcat(res, str_nonce);
+
+    free(str_nonce);
+
+    
     return res;
 }
 
-unsigned char * str_hache(char * st){
 
-    /*unsigned int int_tmp;
-    unsigned char * str_tmp = (unsigned char*)malloc(sizeof(unsigned char)*4);
-    unsigned char * res = (unsigned char*)malloc(sizeof(unsigned char)*(strlen(st)*4));
-    strcat(res, "");
-    int ind_res = 0;
-    int k = 0;
-    for(int i = 0; i< strlen(st); i++){
-        sscanf(&st[i], "%02x",&int_tmp);
-        *str_tmp = int_tmp;
-        strcat(res, str_tmp);
-        printf("%s\n", res);
+/* renvoie la valeur hachee retournee par SHA256 sous forme de chaine de cracatère en hexadecimal*/
+char * hash_to_str(unsigned char * s){
+    char * res = (char*)malloc(sizeof(char)*SHA256_DIGEST_LENGTH*2+1);
 
-    }
-    strcat(res, "\0");
-    return res;
-    
-    //OU :
-
-    unsigned char * s = SHA256 (st , strlen ( st ) , 0);
-    unsigned char * res = (unsigned char *)malloc(sizeof(unsigned char)*strlen(s)*3);
-    unsigned char * res_courant = res;
-    char tmp[4];
+    char tmp[3];
     int j = 0;
-    for ( int i = 0; i < SHA256_DIGEST_LENGTH ; i ++){
-        if ((i+1)%4==0){
-            sscanf(tmp, "%02x", &res_courant);
-            res_courant = res_courant+4;
-        } else {
-            tmp[i]=s[i];
-        }
-        
-    }
-    return res;
-
-    */
-
-    //VERSION DE DANAEL
-    unsigned char * res = (unsigned char *) malloc(SHA256_DIGEST_LENGTH*sizeof(unsigned char));
-    char buffer_l[4];
-    unsigned int stock;
-    int j = 0;
-    for(int i = 0 ; i < 3*SHA256_DIGEST_LENGTH ; i = i + 3){
-        buffer_l[0] = st[i];
-        buffer_l[1] = st[i+1];
-        buffer_l[2] = st[i+2];
-        buffer_l[3] = '\0';
-
-
-        if(sscanf(buffer_l,"%02x",&stock)!=1){
-            printf("Erreur de formatage du hachage hexadécimal\n");
-            free(res);
-            return NULL;
-        }
-        res[j] = stock;
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
+        sprintf(tmp,"%02x", s[i] );                 //conversion en hexadecimal
+        res[j]=tmp[0];
+        j++;
+        res[j]=tmp[1];
         j++;
     }
+    res[j]='\0';
     return res;
-}
-
-void compute_proof_of_work(Block * B, int d){
-    B->nonce = 0;
-    int bool;
-    do {
-        bool = 1;                      //booleen vrai si la valeur hachee du bloc commence par d 0, on l'initialise a vrai
-        char * str_block = block_to_str(B);
-        B->hash = SHA256(str_block, strlen(str_block), 0);
-        unsigned char * hash = B->hash;
-        for(int i = 0; i < d*4; i++){
-            //si on trouve autre chose qu'un 0 on met le booleen a faux, on sort de la boucle et on incremente nonce
-            if (hash[i] != 0){
-                bool = 0;
-                i = d*4;
-                B->nonce = B->nonce +1;      
-            }
-        }
-    }  while (bool != 1);
     
 }
+
+/* rend le bloc valide */
+void compute_proof_of_work(Block * B, int d){
+    B->nonce = 0;
+
+    //booleen vrai si la chaine de caracteres en hexadecimal qui correspond a la valeur hachee du bloc commence par d 0 successifs
+    //on l'initialise a vrai
+    int bool= 1; 
+    int i;
+    
+    do { 
+        bool = 1;         
+        char * str_block = block_to_str(B);
+        unsigned char * hash = SHA256(str_block, strlen(str_block), 0);
+        B->hash = SHA256(str_block, strlen(str_block), 0);
+        char * hash_hexa = hash_to_str(hash);
+        
+        for(int i = 0; i < d; i++){
+            if (hash_hexa[i] != '0'){
+                bool = 0;
+                i = d;
+                B->nonce = B->nonce + 1;
+            }
+        }
+    } while (bool==0);
+
+}
+
+/* retourne 1 si le bloc est valide car sa valeur hachee commence par d 0, retourne 0 sinon */
+int verify_block(Block * b, int d){
+    char * hash_hexa = hash_to_str(b->hash);
+    
+    //on parcourt les d premiers caracteres de la chaine en hexadecimal de la valeur hachee du bloc
+    for(int i = 0; i < d; i++){
+        //si un des caractere est different de 0 le bloc n'est pas valide et on revoie 0
+        if (hash_hexa[i] != '0'){
+            return 0;
+        }
+    }
+
+    //si on est sorti de la boucle c'est que les d premiers caracteres sont 0 alors le bloc est valide et on renvoie 1
+    return 1;
+}
+
+
+
+
 
 
