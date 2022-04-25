@@ -11,20 +11,8 @@ void ecriture_bloc(Block * block){
         exit(1);
     }
     
-    char *auteur = key_to_str(block-> author); 
-    CellProtected* cellpr = block-> votes;
-    unsigned char* h = block->hash;
-    unsigned char* prev_hash = block-> previous_hash; 
-    int proof = block-> nonce; 
-
-    fprintf(fb, "%s %s %s %d\n",auteur,h, prev_hash, proof); 
-    while(cellpr!=NULL){
-        char * str = protected_to_str(cellpr->data);
-        fprintf(fb,"%s\n", str);
-        cellpr = cellpr->next;
-        free(str);
-    }
-    free(auteur);
+    char * str_block = block_to_str(block);
+    fprintf(fb, "%s\n",str_block); 
     fclose(fb);
 }
 
@@ -33,25 +21,25 @@ Block* lecture_bloc(char * nom_fichier){
     char buffer[MAX];
     
     FILE *f = fopen(nom_fichier, "r");
+     if(f == NULL){
+        printf("Erreur d'ouverture de fichier");
+        exit(1);
+    }
 
     Block* b = (Block*)malloc(sizeof(Block));
     Key* k = (Key*)malloc(sizeof(Key));
     int val;
     int n; 
     int nonce; 
-    unsigned char hash[256];
-    unsigned char prev_hash[256];
+    unsigned char hash[SHA256_DIGEST_LENGTH+1];
+    unsigned char prev_hash[SHA256_DIGEST_LENGTH+1];
     CellProtected* votesCourant =NULL; 
     CellProtected * votes = NULL; 
     char cell[258];  
  
-    if(f == NULL){
-        printf("Erreur d'ouverture de fichier");
-        exit(1);
-    }
+   
 
-    //PB : comment faire pour parcourir deux lignes !=
-    
+       
     while(fgets(buffer, MAX, f) != NULL){
         Key* k = (Key*)malloc(sizeof(Key));
         fscanf(f, "(%d, %d) %s, %s, %d\n", &n, &val, hash, prev_hash, &nonce);
@@ -78,33 +66,37 @@ Block* lecture_bloc(char * nom_fichier){
 char* block_to_str(Block* block){
 
     //calcul de la taille de la chaine 
+
     int size = strlen(key_to_str(block->author)) + 1;
-    
+
     size = size + SHA256_DIGEST_LENGTH*2 + 1; 
     
     CellProtected * votes = block->votes;
     while(votes){
         size = size + strlen(protected_to_str(votes->data)) + 1;
-        votes = votes->next;
-        
+        votes = votes->next;     
     }
 
-    double nb_chiffres;
+    double nb_chiffres = 0;
     if (block->nonce == 0){
         nb_chiffres = 1;
     } else {
-        nb_chiffres = log10( (double)(block->nonce));
+        nb_chiffres = log10((double)(block->nonce));
     }
     
     size = size + (int)(nb_chiffres) + 2;
 
     //printf("size = %d\n", size);
-
+   
     //creation de la chaine
-    char *res = (char *)malloc(sizeof(char)*size);
-    strcpy(res,"");
 
-    strcat(res,key_to_str(block->author));
+    char *res = (char *)malloc(sizeof(char)*size);
+    if (res == NULL){
+        printf("erreur malloc bloc_to_str\n");
+    }
+
+    strcpy(res,"");
+    strcat(res,key_to_str(block->author));  
 
     res[strlen(res)]= '\n';
     res[strlen(res)+1]= '\0';
@@ -112,6 +104,7 @@ char* block_to_str(Block* block){
     strcat(res,hash_to_str(block->previous_hash));
     res[strlen(res)]= '\n';
     res[strlen(res)+1]= '\0';
+
 
     votes = block->votes;
     while(votes){
@@ -125,9 +118,6 @@ char* block_to_str(Block* block){
     sprintf(str_nonce, "%d", block->nonce);
     strcat(res, str_nonce);
 
-    free(str_nonce);
-
-    
     return res;
 }
 
@@ -135,10 +125,10 @@ char* block_to_str(Block* block){
 /* renvoie la valeur hachee retournee par SHA256 sous forme de chaine de cracatère en hexadecimal*/
 char * hash_to_str(unsigned char * s){
     char * res = (char*)malloc(sizeof(char)*SHA256_DIGEST_LENGTH*2+1);
-
     char tmp[3];
     int j = 0;
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
+    int i;
+    for(i = 0; i < SHA256_DIGEST_LENGTH; i++){
         sprintf(tmp,"%02x", s[i] );                 //conversion en hexadecimal
         res[j]=tmp[0];
         j++;
@@ -162,11 +152,10 @@ void compute_proof_of_work(Block * B, int d){
     do { 
         bool = 1;         
         char * str_block = block_to_str(B);
-        unsigned char * hash = SHA256(str_block, strlen(str_block), 0);
         B->hash = SHA256(str_block, strlen(str_block), 0);
-        char * hash_hexa = hash_to_str(hash);
+        char * hash_hexa = hash_to_str(B->hash);
         
-        for(int i = 0; i < d; i++){
+        for(i = 0; i < d; i++){
             if (hash_hexa[i] != '0'){
                 bool = 0;
                 i = d;
@@ -192,6 +181,13 @@ int verify_block(Block * b, int d){
     //si on est sorti de la boucle c'est que les d premiers caracteres sont 0 alors le bloc est valide et on renvoie 1
     return 1;
 }
+
+void delete_block(Block* b){
+    delete_chain(b->votes);
+    free(b);
+}
+
+
 
 
 
