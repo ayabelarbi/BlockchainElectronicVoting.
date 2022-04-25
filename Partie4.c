@@ -216,6 +216,169 @@ void delete_block(Block* b){
     delete_chain(b->votes);
     free(b);
 }
+CellTree* create_node(Block* b){
+
+    CellTree* cell= (CellTree*)malloc(sizeof(CellTree));
+    if(cell == NULL){
+        printf("Allocation d'une cellule failed dans create_node\n");
+        exit(1);
+    }
+    cell->block = b; 
+    cell-> height = 0; 
+    cell->father= NULL; 
+    cell->firstChild = NULL; 
+    cell->nextBro = NULL; 
+
+    return cell; 
+}
+
+int update_height(CellTree* father, CellTree* child) {
+    //Si la hauteur du fils +1 n'est pas superieur 
+    int height_child = child->height; 
+    int height_father = father->height;
+
+    if(height_child +1 > height_father) {
+        father->height = height_child +1; 
+        return 1; 
+    }
+    return 0; 
+}
+
+
+void add_child(CellTree* father, CellTree* child){
+    
+    father->firstChild = child; 
+
+    child->father = father; 
+    
+    CellTree* fatherTemp = father;
+    CellTree* childTemp= child;
+    
+    int tailleAjuste = update_height(fatherTemp, childTemp);
+
+    while((fatherTemp) && (tailleAjuste)){
+        //Le fils devient son pere
+        childTemp = fatherTemp; 
+        fatherTemp = fatherTemp->father; 
+    }
+
+}
+
+void print_tree(CellTree *t){
+    if (t==NULL){
+        printf("L'arbre est vide ou les fils sont NULL\n"); 
+        exit(0);
+    }
+   
+    //Block* bcourant = t->block; 
+    char* id = hash_to_str(t->block->hash);
+    int tailleT = t->height;
+    printf("id :  %s  de hauteur : %d\n", id, tailleT);
+
+    print_tree(t->firstChild);
+    print_tree(t->nextBro);
+}
+
+
+void delete_node(CellTree *node){
+    
+    delete_block(node->block);
+    free(node->block->author);
+    free(node->block->hash);
+    free(node->block->previous_hash);
+    free(node);
+
+    if(node==NULL){
+        printf("le noeud de l'arbre est bien libéré\n");
+    }else{
+        printf("le noeud de l'arbre n'est pas libere\n");
+    }
+}
+
+void delete_tree(CellTree* tree){
+
+    delete_tree(tree->firstChild);
+    delete_tree(tree->nextBro);
+    delete_node(tree);
+
+    if(tree == NULL){
+        printf("l'arbre est supprimmé\n");
+    }else{
+        printf("l'arbre n'est pas supprimmé\n");
+    }
+
+}
+
+//DETERMINATION DU DERNIER BLOC 
+CellTree *highest_child(CellTree* cell){
+
+    if(cell == NULL){
+        printf("l'arbre est vide");
+        exit(0);
+    }
+
+    CellTree* cell_cour = cell->firstChild;
+    CellTree* highest = cell_cour;
+
+    while(cell_cour){
+        if(highest->height > cell_cour->height){
+            cell_cour = cell_cour->nextBro;
+
+        }highest = cell_cour; 
+    }
+    return highest; 
+}
+CellTree* last_node(CellTree* tree){
+    //tant que nous ne trouvons pas de feuille, il faut continuer de parcourir l'arbre
+
+    if(tree->firstChild == NULL) {
+        return tree; 
+    }
+    else{
+        CellTree* highest = highest_child(tree);
+        return last_node(highest);
+    }
+}
+
+CellProtected* fusion_declaration(CellProtected* decl1, CellProtected* decl2){
+
+    CellProtected* fusion = (CellProtected*)malloc(sizeof(CellProtected));
+    if(fusion == NULL){
+        printf("La cellule n'est pas correctement alloué\n");
+        exit(0);
+    }
+
+    if(decl1 == NULL){
+        return decl2; 
+    }
+
+    fusion = decl1; 
+    while(fusion->next){
+        fusion = fusion->next; 
+    }fusion ->next = decl2;
+
+    return fusion; 
+}
+
+CellProtected* fusion_blockchain(CellTree *t){
+    if((t == NULL)|| (t->block->votes ==NULL)){
+        printf("L'arbre est vide ou le block ne contient pas de déclaration de vote\n"); 
+        exit(0);
+    }
+
+    CellProtected *res = NULL; 
+    res = fusion_declaration(res,t->block->votes);
+    CellTree* temp = t; 
+    //tant que nous n'avons pas finis de parcourir l'arbre
+    while(temp->firstChild != NULL){
+        temp = highest_child(temp);
+        res = fusion_declaration(res, temp->block->votes);
+    }
+    
+
+    return res; 
+
+}
 
 
 
