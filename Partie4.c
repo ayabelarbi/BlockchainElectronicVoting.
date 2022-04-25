@@ -149,7 +149,7 @@ char * hash_to_str(unsigned char * s){
 
 unsigned char * str_to_hash(char * hash_hexa){
     unsigned char * hash = (unsigned char *)malloc(sizeof(unsigned char)*SHA256_DIGEST_LENGTH);
-    char * tmp[3];
+    char tmp[3];
     for(int i = 0; i < strlen(hash_hexa); i = i + 2){
 
         int d1, d2;
