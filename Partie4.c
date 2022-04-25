@@ -216,6 +216,8 @@ void delete_block(Block* b){
     delete_chain(b->votes);
     free(b);
 }
+
+//Exercice 8 : Manipulation d'un arbre de blocs
 CellTree* create_node(Block* b){
 
     CellTree* cell= (CellTree*)malloc(sizeof(CellTree));
