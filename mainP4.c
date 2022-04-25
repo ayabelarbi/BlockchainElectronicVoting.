@@ -46,15 +46,20 @@ int main(){
     
     
 
-    //TEST HASH_TO_STR
+    //TEST HASH_TO_STR + STR_TO_HASH
     printf("TEST HASH_TO_STR\n");
     unsigned char * hash_test = (unsigned char *)malloc(sizeof(unsigned char)*SHA256_DIGEST_LENGTH);
     for(int i = 0; i<SHA256_DIGEST_LENGTH; i++){
-        hash_test[i]=0;
+        hash_test[i]=18;
     }
 
-    printf("%s\n", hash_to_str(hash_test));
-    
+    char * hash_hexa = hash_to_str(hash_test);
+    printf("hash_hexa : %s\n", hash_hexa);
+
+    unsigned char * hash_test2 = str_to_hash(hash_hexa);
+    char * hash_hexa2 = hash_to_str(hash_test2);
+    printf("hash_hexa2 : %s\n", hash_hexa2);
+
   
     //TEST BLOC_TO_STR
     printf("\nTEST BLOC_TO_STR\n");
@@ -89,8 +94,10 @@ int main(){
 
     ecriture_bloc(b);
 
-    /*
+
     Block * b2 = lecture_bloc("bloc.txt");
+    /*
+
     printf("On ecrit le bloc precedent dans un fichier, on creer un bloc a partir de la lecture de ce fichier et on obtient :\n");
     printf("%s\n", block_to_str(b2));
 
@@ -101,6 +108,7 @@ int main(){
 
     
 }
+
 
 
 
