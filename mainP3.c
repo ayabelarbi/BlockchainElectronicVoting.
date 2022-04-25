@@ -26,43 +26,67 @@ int main(){
     delete_chain(ldec);
     
     printf("\n\n");
+
     //--Exo 6-- Determination du gagnant de l'election 
     printf("--exercice 6 : les tables de hachage--\n\n");
-    
-    Key * pKey2 = malloc( sizeof ( Key ) ) ;
-    Key * sKey2 = malloc( sizeof ( Key ) ) ;
-    pKey2 -> val =18127; 
-    pKey2 -> n = 32231; 
-
     CellKey* cellKey2 = read_public_keys("key.txt");
     print_list_keys(cellKey2);
-    HashTable *ht  = create_hashtable(cellKey2,7);
+    Key * pKey2 = malloc( sizeof ( Key ) ) ;
+    
+    
+    // pKey2->val =2797;
+    // pKey2->n =27661;
+
+    // printf("\n");
+
+    //creation of hash table : 
+    // HashTable* ht  = create_hashtable(cellKey2,2);
+    // HashCell** hashtab = ht->tab; 
+    // int size = ht->size ; 
+    // printf("--Impression du tableau de hachage --\n");
+    // //parcours de chaque cellule ; 
+    // for(int i = 0; i< size; i++){
+
+    //     printf("la clef en pos : %d\n", i); 
+    //     Key* k = (Key*)malloc(sizeof(Key)); 
+    //     k =  hashtab[i]->key; 
+    //     printf("%ld, %ld \n",k->val, k->n);
+    // }
 
     // int trouve = find_position(ht, pKey2);
     // printf("indice trouvé = %d \n", trouve);
-    // // printf("\n");
-    // // // HashCell**hc = ht->tab; 
-    // // // printf("La taille de la table de hachage = %d\n", ht->size);
-    // // // for(int i = 0; i< ht->size; i++){
-    // // //     printf("la clef en pos : %d = (%ld,%ld)\n ", i, hc[i]->key->val, hc[i]->key->n );
-    // // // }
+    // Key* ktrouve = hashtab[trouve]->key;
 
-    // //delete_hashtable(ht);
+    // printf("voici la clef %ld, %ld \n",ktrouve->val, ktrouve->n);
+    // printf("\n");
+    //delete_hashtable(ht);
 
-    // CellKey* cellKeyWinner = read_public_keys("key.txt");
-    // CellKey* cellKeyCandidat = read_public_keys("candidates.txt");
-    // //print_list_keys(cellKeyWinner);
-    // printf("\n");
-    // //print_list_keys(cellKeyCandidat);
-    // printf("\n");
-    // CellProtected* cellprotectedWinner = read_protected("declaration.txt"); 
-    // //afficher_liste_dec(cellprotectedWinner);
-    // printf("\n");
+   
+    CellKey* cellKeyWinner = read_public_keys("key.txt");
+    printf("J'affiche la liste des keys votantes\n");
+    print_list_keys(cellKeyWinner);
+    printf("\n");
+
+    CellKey* cellKeyCandidat = read_public_keys("candidates.txt");
+    printf("J'affiche la liste des candidats\n");
+    print_list_keys(cellKeyCandidat);
+    printf("\n");
     
-    // Key * winner = compute_winner(cellprotectedWinner,cellKeyCandidat, cellKeyWinner,2,4); 
-    // printf("key->val =%ld \n ", winner->val);
-    // printf("Le gagnant est : %s", key_to_str(winner));
+    CellProtected* cellprotectedWinner = read_protected("declaration.txt"); 
+    printf("J'affiche la liste de declaration\n");
+    afficher_liste_dec(cellprotectedWinner);
+    printf("\n");
     
+
+
+    Key * winner = compute_winner(cellprotectedWinner,cellKeyCandidat, cellKeyWinner,8,4); 
+    printf("key->val = %ld\n ", winner->val);
+    printf("Le gagnant est : %s", key_to_str(winner));
+    
+   
+    printf("\n\n");
+    printf("---Exerce 8: manipulation d'un arbre de blocs --- \n");
+
     return 0;
     
 }

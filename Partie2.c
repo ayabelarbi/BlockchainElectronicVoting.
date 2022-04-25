@@ -167,12 +167,10 @@ char* protected_to_str(Protected* pr){
     char * s = signature_to_str(pr->sgn);
     if(s == NULL){
         printf("erreur signature vide dans protected_to_str");
-        
     }
-    int size =  strlen(key)+strlen(pr->mess)+strlen(s)+3;
-    
-    char *res = (char *)malloc(size*sizeof(char));
 
+    int size =  strlen(key)+strlen(pr->mess)+strlen(s)+3;
+    char *res = (char *)malloc(size*sizeof(char));
     if (res == NULL){
         printf("erreur malloc protected_to_str\n");   
     }
@@ -193,7 +191,7 @@ char* protected_to_str(Protected* pr){
 }
 
 
-/*renvoie la delcaration representee par la chaine de caractere */
+/*renvoie la declaration representee par la chaine de caractere */
 Protected* str_to_protected(char* chaine){
 
     char key[256];

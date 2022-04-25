@@ -5,6 +5,11 @@
 
 void generate_random_data(int nv, int nc){
 	srand(time(NULL));
+	if (nv < nc)
+    {
+        puts("Nombre de candidat supérieur au nombre de citoyens.");
+        exit(0);
+    }
 	char buffer[DATA_SIZE];
 	FILE *fk = fopen("key.txt", "w");
 	FILE *fc = fopen("candidates.txt","w");
@@ -24,8 +29,9 @@ void generate_random_data(int nv, int nc){
 		Key* pkey = (Key*)malloc(sizeof(Key));
 		Key* skey = (Key*)malloc(sizeof(Key));
 		init_pair_keys(pkey, skey, 3, 7);
-		//fprintf(fk ,"Citoyen n° %d" ,i+1);
-		fprintf(fk, "(%ld,%ld) (%ld,%ld)\n", skey->val,skey->n,pkey->val,pkey->n);
+		char* pkeystr = key_to_str(pkey);
+		char* skeystr = key_to_str(skey);
+		fprintf(fk, "%s %s\n",pkeystr, skeystr); 
 		tabkp[i]= pkey;
 		tabks[i] = skey;
 
@@ -33,8 +39,9 @@ void generate_random_data(int nv, int nc){
 	
 	for(int i = 0; i < nc; i++){
 		int k= rand()%nv;
+		Key * keypCandidat = tabkp[k];
+		fprintf(fc,"%s\n", key_to_str(keypCandidat));
 		
-	    fprintf(fc,"(%ld, %ld)\n", tabkp[k]->val, tabkp[k]->n);
 	    Key* pkeyC = (Key*)malloc(sizeof(Key));
 		init_key(pkeyC, tabkp[k]->val, tabkp[k]->n);
 		tabC[i] = pkeyC;
@@ -46,9 +53,9 @@ void generate_random_data(int nv, int nc){
 		mess = key_to_str(tabC[indice]);
 		pr = init_protected(tabkp[i], mess , s );
 		s = sign(mess, tabks[i]);
-		
-		fprintf(fd,"%s (%ld,%ld) %s\n",mess, tabkp[i]->val, tabkp[i]->n,signature_to_str(s));
-
+		Key *kpvotant  = tabkp[i];
+		fprintf(fd,"%s %s %s\n", key_to_str(kpvotant),mess,signature_to_str(s));
+	
 	}
 	
 	fclose(fk);

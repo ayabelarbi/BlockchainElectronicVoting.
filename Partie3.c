@@ -45,15 +45,10 @@ CellKey* read_public_keys(char* nom_fichier){//ok
         exit(1);
     }
     char buffer[256];
+    char strkey[256];
     while(fgets(buffer , 256, fk) != NULL){
-        sscanf(buffer,"(%ld,%ld)", &val, &n);
-        //fscanf(fk,"(%ld,%ld)", &val, &n); Ne fonctionne pas 
-        Key* k = (Key*)malloc(sizeof(Key));
-        if(k == NULL){
-            printf("Erreur malloc key read_public_key");
-            return NULL;
-        }
-        init_key(k, val, n);
+        sscanf(buffer,"%s %*s", strkey);
+        Key * k = str_to_key(strkey);
         LCK = addKey(LCK, k);
     }
     fclose(fk);
@@ -65,7 +60,7 @@ CellKey* read_public_keys(char* nom_fichier){//ok
 void print_list_keys(CellKey* LCK){
     CellKey* tmp = LCK;
     while(tmp){
-        printf("(%ld, %ld) \n",tmp->data->val,tmp ->data->n);
+        printf("(%lx, %lx) \n",tmp->data->val,tmp ->data->n);
         tmp = tmp -> next;
     }
 }
@@ -211,13 +206,14 @@ HashCell* create_hashcell(Key* key){
     return res; 
 }
 
+//fonction de hachage 
 int hash_function(Key* key, int size){
     int ind = ((key->val) + (key ->n)) % size; 
- 
+
     return ind;
 }
 
-
+//permet retourner vrai si deux clefs sont identique, faux sinon
 int identique(Key* k1, Key *k2){
     if((k1->val == k2->val) && (k1->n == k2->n)){ 
         return 1; 
@@ -228,164 +224,174 @@ int identique(Key* k1, Key *k2){
 
 
 int find_position(HashTable* t, Key* key){
-    printf("je rentre dans la fonction\n");
+  
     if(key == NULL){
         printf("erreur, la clef est null\n");
         exit(1); 
     }
-
-    HashCell ** tab = t->tab;
+    
     int ind = hash_function(key, t->size);
-    //printf("ind = %d\n", ind);
-    int cpt = 0;
     int ind_courant = ind; 
+    
 
+    while((ind_courant != t->size-1 ) && (t ->tab[ind_courant] != NULL)){ //tant que le tableau n'est pas parcouru 
+        //printf("l'indice courant = %d\n", ind_courant);
 
-    while((cpt!=t->size)&&(t ->tab[ind_courant] != NULL)){ //tant que le tableau n'est pas parcouru 
-        printf("indice  = %d\n", ind);
-        if ((tab[ind_courant]->key-> val == key-> val) && (tab[ind_courant]->key -> n == key-> n)){//si la cle est trouvé en ind_courant
-            printf("j'ai trouve la cle a l'indice : %d\n", ind_courant);
+        if((ind_courant == ind -1) && t->tab[ind_courant] == NULL){
+            printf("la table de hashage est pleine dans find_position");
+            exit(0);
+        }
+
+        if (identique(t->tab[ind_courant]->key, key)){
+            //printf("indice trouvé = %d\n", ind_courant);
             return ind_courant; 
         } 
         else {
-            printf("je passe if2 et ind_courant incremente\n");
             ind_courant++; //on augmente l'indice jusqu'a trouver une place a la valeur
-            cpt ++; 
-            if (cpt >= t->size){
-                printf("je passe if3 : jarrive a la fin du tableau ind_courant repasse a 0\n");
+            //printf("indice apres incrementation = %d\n", ind_courant);
+        }  
+        if (ind_courant >= t->size){
                 ind_courant = 0; 
-            }
-        }      
+        }  
+        
     }
     return ind_courant;// on le retourne a la position dans lequel il devrait être
 }
 
-// int find_position(HashTable* t, Key* key){
-//     //printf("je rentre dans la fonction \n");
-//     HashCell ** tab = t->tab;
-//     int size = t->size;
-
-//     int ind = hash_function(key, size);
-//     //printf("ind = %d\n", ind);
-//     int ind_courant = ind;
-//     int cpt = 0;
-
-//     while ( (cpt!=size)  ){
-//         //printf("je rentre dans le while, ind_courant = %d\n", ind_courant);
-//         Key * cle_courante = tab[ind_courant]->key;
-//         if (tab[ind_courant]!=NULL){
-//             return ind_courant;
-//         }
-//         if ((cle_courante->val == key->val)&&(cle_courante->n == key->n)){
-//             return ind_courant;
-//         } else if (ind_courant+1 == size) {
-//             ind_courant = 0;
-//             cpt++;
-//         } else {
-//             ind_courant++;
-//             cpt++;
-//         }
-//     } 
-//     printf("plus de place\n");
-    
-//     exit(0);
-// }
-
+//Pour crée la table de hachage il faut que la size soit supérieur à la taille de la cellule de keys 
 HashTable* create_hashtable(CellKey* keys, int size) {
     /* crée et initialise une table de hachage de taille size contenant une cellule pour chaque clé de la liste chainée keys */
-    if (!keys) return NULL; 
-    
-    HashTable *hTable = (HashTable*)malloc(sizeof(HashTable)) ; 
-    hTable ->size = size ; 
-    CellKey *temp = keys; 
-
-    if (!hTable) {
-        printf ("Erreur d'allocation \n"); 
-        return NULL ;
+    if (!keys){
+        printf("la cellule de keys est vide");
+        exit(1);
     }
-  
-    // on cherche et insere chaque clé à sa position
-    do {
-        int i = find_position(hTable, keys->data);
-        hTable ->tab[i] = create_hashcell(keys ->data) ;  
-        temp = temp->next ; 
-    } while (temp) ;
+
+    HashTable *hTable = (HashTable*)malloc(sizeof(HashTable));
+    hTable->size = size ;
+    hTable->tab = (HashCell**)malloc(size*sizeof(HashCell*));
+
+    if (hTable == NULL) {
+        printf ("Erreur d'allocation dans create_hashtable\n"); 
+        exit(0) ;
+    }
+    for(int i = 0; i <size; i++){
+        hTable->tab[i] = NULL; 
+    }
+
+    CellKey *temp = keys; 
+    int i = 0; 
+    while(temp){
+        
+        HashCell* cell_courant = create_hashcell(temp->data);
+        //i = find_position(hTable, keys->data); 
+        hTable->tab[i] = cell_courant ;
+        printf("tab[%d] = %ld, %ld\n", i, hTable->tab[i]->key->val, hTable->tab[i]->key->n );
+        temp = temp ->next;
+        i++; 
+    }
 
     return hTable; 
 }
 
+
+
 void delete_hashtable(HashTable* hTable){
    
     HashCell *cell_c; 
-    for(int i = 0 ; i <hTable->size; i++){
+
+    for(int i = 0 ; i < hTable->size; i++){
         cell_c = hTable->tab[i];
         free(cell_c);
-        if(cell_c != NULL){
-            printf("Problème de free dans delete hashTable\n");
-        }
     }
     free(hTable->tab); 
-    if(hTable != NULL){
-        printf("La table de hashage n'est pas liberé \n");
-    }
+    free(hTable);
+
+    // if(hTable == NULL){
+    //     printf("la table est liberee\n");
+    // }else{
+    //     printf("la table n'est pas liberee\n");
+    // }
 }
 
 
 Key* compute_winner(CellProtected* decl, CellKey* candidates, CellKey* voters, int sizeC, int sizeV){
-    // creation de la table de hachage des candidats 
-    // création de la table de hachage des votants 
-    HashTable* HTC = create_hashtable(candidates, sizeC); 
+    // creation de la table de hachage des candidats et votant
+    
     HashTable* HTV = create_hashtable(voters, sizeV);
+    HashTable* HTC = create_hashtable(candidates, sizeC); 
 
   
-    int verifcondi = 0; //1 = TRUE, 0 = FALSE 
+     //1 = TRUE, 0 = FALSE 
 
     int positionCandidates, positionVotant; 
+    CellProtected* DeclaCourante = decl;
+    int verifcondi = 0;
+    while(DeclaCourante){
+        
+        //On recupère la cle du candidat pour lequel le votant vote
+       
+        Key* keyVotant = DeclaCourante->data->pKey; 
 
-    while(decl){
-
-        Protected* DeclaCourante = decl -> data; 
-        Key* keyCandidat = str_to_key(decl ->data -> mess);
         //On recupere l'indice de la position du votant et du candidat dans HTV et HTC
-        positionCandidates = find_position(HTC, candidates -> data); 
-        positionVotant = find_position(HTV, voters -> data); 
-        printf("positionCandidate %d", positionCandidates); 
-        printf("positionVotant : %d", positionVotant);
+        // printf("clef de la liste des votant %ld, %ld\n", voters->data->val, voters->data->n);
+        // printf("clef de la liste des candidats %ld, %ld\n", candidates->data->val, candidates->data->n);
+        
+       
+        positionVotant = find_position(HTV, keyVotant); 
+        printf("positionVotant : %d\n", positionVotant);
+        
         
         Key* keyC = HTC->tab[positionCandidates]->key;
         Key* keyV = HTV->tab[positionVotant]->key;
-
+    
+        printf("keyCandidat courante = %s\n", key_to_str(keyC));
+        printf("keyVotant Courante = %s\n", key_to_str(keyV));
+    
         //si le votant est présent dans la table de hachage et qu'il peut voter: condi1 ok 
-        if((keyC->val == DeclaCourante->pKey->val) && (keyC->n == DeclaCourante->pKey->n)&&(HTV->tab[positionVotant]->val == 0)){
+        if((HTV->tab[positionVotant])&&(HTV->tab[positionVotant]->val== 0)){
             verifcondi = 1; 
-            printf("La condition 1 est verifie : %d", verifcondi);
-            HTV->tab[positionVotant]->val = 1; //on comptabilise le vote du votant
+            Key* keyCandidat = str_to_key(decl->data->mess);
+            positionCandidates = find_position(HTC, keyCandidat);
+            
+            
             //si le candidat du votant est bien dans HTV
-            if((keyCandidat->val == keyV->val) &&(keyCandidat->n == keyV->n)){
+            if(HTC->tab[positionCandidates]){
                 verifcondi = 1;
-                printf("La condition est toujours verifie : %d", verifcondi); 
-                HTC->tab[positionCandidates]->val += 1;
-            } else {
-                verifcondi = 0 ;
-                printf("Le candidat n'est pas dans HTC"); 
+                //le candidat reçoit un vote 
+                HTC->tab[positionCandidates]->val++;
+                printf("pas de pb lalala\n");
+                //printf(" il y %d vote pour %s \n",HTC->tab[positionCandidates]->val, key_to_str(HTC->tab[positionCandidates]->key) );
+                //on comptabilise le vote du votant
+                HTV->tab[positionVotant]->val = 1;
             }
-        }else {
-            verifcondi = 0; 
-            printf("Le votant n'est pas dans HTV");
+
         }
-    decl = decl->next; 
-    DeclaCourante = decl->data;
+        DeclaCourante = DeclaCourante->next;
     }
 
     //on parcours la table de hachage du votant 
     Key * winner = (Key*)malloc(sizeof(Key));
-    for(int i = 0; i < sizeV; i ++){
-        int nbvoteMAX = 0; 
-        if(HTV->tab[i]->val > nbvoteMAX){
-            HTV->tab[i]->val = nbvoteMAX; 
-            winner =  HTV->tab[i]->key; 
-        } 
+    if(winner == NULL){
+        printf("La clef winner n'est pas allouer\n");
+        exit(1);
+    }
 
+    //si toute les conditions sont verifie
+    if(verifcondi){
+        
+        for(int i = 0; i < sizeC; i ++){
+            //a la recherche du candidat avec le plus vote
+            int nbvoteMAX = 0; 
+            if(HTC->tab[i]->val > nbvoteMAX){
+                printf("%s\n",key_to_str(HTC->tab[i]->key));
+                nbvoteMAX = HTC->tab[i]->val ; 
+                winner =  HTC->tab[i]->key;    
+                printf("nb de vote pour le candidat : %d",  HTC->tab[i]->val);
+            }
+        }
+    }else{
+        printf("pas de winner car les conditions ne sont pas satisfaite\n");
+        //exit(0);
     }
     
     delete_hashtable(HTC);

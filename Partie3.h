@@ -35,6 +35,7 @@ void afficher_liste_dec(CellProtected * ldec);
 CellProtected* ajout_en_tete(CellProtected * ldec, Protected * pr); 
 void delete_cell_protected(CellProtected* c); 
 void delete_chain(CellProtected* ldec); 
+
 HashCell* create_hashcell(Key* key); 
 int hash_function(Key* key, int size); 
 HashTable* create_hashtable(CellKey* keys, int size); 
