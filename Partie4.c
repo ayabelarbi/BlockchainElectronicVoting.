@@ -16,6 +16,8 @@ void ecriture_bloc(Block * block){
     fclose(fb);
 }
 
+
+
 Block* lecture_bloc(char * nom_fichier){  
     FILE *f = fopen(nom_fichier, "r");
     if(f == NULL){
@@ -29,30 +31,37 @@ Block* lecture_bloc(char * nom_fichier){
     char str_key[32];
     fgets(str_key, 32, f);
     b->author = str_to_key(str_key);
-
+   
     //on recupere le previous hash
-    char hash_hexa[SHA256_DIGEST_LENGTH+1];
-    fgets(hash_hexa,SHA256_DIGEST_LENGTH+1, f);
+    char hash_hexa[SHA256_DIGEST_LENGTH*2+2];
+    fgets(hash_hexa,SHA256_DIGEST_LENGTH*2+2, f);
     b->previous_hash = str_to_hash(hash_hexa);
 
     //on recupere nonce
     char str_nonce[256];
     fgets(str_nonce,256, f);
     int nonce = 0;
-    sprintf(str_nonce, "%d",nonce);
+    sscanf(str_nonce, "%d",&nonce);
     b->nonce = nonce;
 
     //on recupere les votes
     char buffer[256];
-    CellProtected * votes = (CellProtected*)malloc(sizeof(CellProtected)*20);
-    Protected * vote_courant = (Protected*)malloc(sizeof(Protected));
+    CellProtected * votes = (CellProtected*)malloc(sizeof(CellProtected));
+    Protected * vote_courant;
     while(fgets(buffer, 256, f)!=NULL){
-        votes = ajout_en_tete(votes, vote_courant);
+        if (buffer[0]!='\0'){
+            vote_courant = (Protected*)malloc(sizeof(Protected));
+            vote_courant = str_to_protected(buffer);
+            votes = ajout_en_tete(votes, vote_courant);
+        }
+        
     }
     b->votes = votes;
 
+/*
     //on creer le hash
     b->hash = SHA256(block_to_str(b), strlen(block_to_str(b)), 0);
+*/
 
     fclose(f);
 
