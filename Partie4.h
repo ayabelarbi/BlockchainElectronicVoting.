@@ -18,5 +18,6 @@ char* block_to_str(Block* block);
 char * hash_to_str(unsigned char * s);
 void compute_proof_of_work(Block * B, int d);
 int verify_block(Block * b, int d);
+void delete_block(Block* b);
 
 #endif
