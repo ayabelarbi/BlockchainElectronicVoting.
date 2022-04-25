@@ -21,4 +21,15 @@ void compute_proof_of_work(Block * B, int d);
 int verify_block(Block * b, int d);
 void delete_block(Block* b);
 
+CellTree* create_node(Block* b); 
+int update_height(CellTree* father, CellTree* child);
+void add_child(CellTree* father, CellTree* child);
+void print_tree(CellTree *t);
+void delete_node(CellTree *node);
+void delete_tree(CellTree* tree);
+CellTree *highest_child(CellTree* cell); 
+CellProtected* fusion_declaration(CellProtected* decl1, CellProtected* decl2);
+CellProtected* fusion_blockchain(CellTree *t);
 #endif
+
+
