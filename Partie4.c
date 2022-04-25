@@ -16,49 +16,47 @@ void ecriture_bloc(Block * block){
     fclose(fb);
 }
 
-
-Block* lecture_bloc(char * nom_fichier){
-    char buffer[MAX];
-    
+Block* lecture_bloc(char * nom_fichier){  
     FILE *f = fopen(nom_fichier, "r");
-     if(f == NULL){
+    if(f == NULL){
         printf("Erreur d'ouverture de fichier");
         exit(1);
     }
 
-    Block* b = (Block*)malloc(sizeof(Block));
-    Key* k = (Key*)malloc(sizeof(Key));
-    int val;
-    int n; 
-    int nonce; 
-    unsigned char hash[SHA256_DIGEST_LENGTH+1];
-    unsigned char prev_hash[SHA256_DIGEST_LENGTH+1];
-    CellProtected* votesCourant =NULL; 
-    CellProtected * votes = NULL; 
-    char cell[258];  
- 
-   
+    Block * b = (Block *)malloc(sizeof(Block));
 
-       
-    while(fgets(buffer, MAX, f) != NULL){
-        Key* k = (Key*)malloc(sizeof(Key));
-        fscanf(f, "(%d, %d) %s, %s, %d\n", &n, &val, hash, prev_hash, &nonce);
-        init_key(k, val, n);
-        fscanf(f,"%s", cell); 
-        Protected* pr = str_to_protected(cell);
-        votesCourant = ajout_en_tete(votesCourant, pr); 
+    //on recupere la cle
+    char str_key[32];
+    fgets(str_key, 32, f);
+    b->author = str_to_key(str_key);
+
+    //on recupere le previous hash
+    char hash_hexa[SHA256_DIGEST_LENGTH+1];
+    fgets(hash_hexa,SHA256_DIGEST_LENGTH+1, f);
+    b->previous_hash = str_to_hash(hash_hexa);
+
+    //on recupere nonce
+    char str_nonce[256];
+    fgets(str_nonce,256, f);
+    int nonce = 0;
+    sprintf(str_nonce, "%d",nonce);
+    b->nonce = nonce;
+
+    //on recupere les votes
+    char buffer[256];
+    CellProtected * votes = (CellProtected*)malloc(sizeof(CellProtected)*20);
+    Protected * vote_courant = (Protected*)malloc(sizeof(Protected));
+    while(fgets(buffer, 256, f)!=NULL){
+        votes = ajout_en_tete(votes, vote_courant);
     }
- 
-    while(votesCourant){
-        ajout_en_tete(votes, votesCourant->data);
-        votesCourant= votesCourant->next;
-    }
+    b->votes = votes;
 
-    b->author = k; 
-    b->hash = hash; 
-    b->previous_hash = prev_hash; 
-    b->nonce = nonce; 
+    //on creer le hash
+    b->hash = SHA256(block_to_str(b), strlen(block_to_str(b)), 0);
 
+    fclose(f);
+
+    return b;
 }
 
 
@@ -138,6 +136,29 @@ char * hash_to_str(unsigned char * s){
     res[j]='\0';
     return res;
     
+}
+
+unsigned char * str_to_hash(char * hash_hexa){
+    unsigned char * hash = (unsigned char *)malloc(sizeof(unsigned char)*SHA256_DIGEST_LENGTH);
+    char * tmp[3];
+    for(int i = 0; i < strlen(hash_hexa); i = i + 2){
+
+        int d1, d2;
+        char tmp1[2];
+        char tmp2[2];
+        tmp1[0] = hash_hexa[i];
+        tmp1[1] = '\0';
+        tmp2[0] = hash_hexa[i+1];
+        tmp2[1] = '\0';
+
+        sscanf(tmp1, "%d", &d1);
+        sscanf(tmp2, "%d", &d2);
+
+        hash[i/2]= d1 * 16 + d2;
+               
+        //printf("hash[%d] : %d\n", i/2, hash[i/2] );
+    }
+    return hash;
 }
 
 /* rend le bloc valide */
