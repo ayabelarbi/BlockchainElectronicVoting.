@@ -92,7 +92,7 @@ int main(){
     //TEST LECTURE ECRITURE
     printf("TEST LECTURE ECRITURE\n\n");
 
-    ecriture_bloc(b);
+    ecriture_bloc(b, "bloc.txt");
 
 
     Block * b2 = lecture_bloc("bloc.txt");
