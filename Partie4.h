@@ -31,6 +31,7 @@ void delete_block(Block* b);
 int hexa_to_int(char c);
 
 CellTree* create_node(Block* b); 
+CellTree* racine(CellTree* t);
 int update_height(CellTree* father, CellTree* child);
 void add_child(CellTree* father, CellTree* child);
 void print_tree(CellTree *t);
