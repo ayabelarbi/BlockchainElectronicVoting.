@@ -47,7 +47,7 @@ Block* lecture_bloc(char * nom_fichier){
 
     //on recupere les votes
     char buffer[256];
-    CellProtected * votes = (CellProtected*)malloc(sizeof(CellProtected));
+    CellProtected * votes = NULL;
     Protected * vote_courant;
     while(fgets(buffer, 256, f)!=NULL){
         if (buffer[0]!='\0'){
@@ -58,18 +58,16 @@ Block* lecture_bloc(char * nom_fichier){
     }
     b->votes = votes;
 
-/*
+
     //on creer le hash
     
-    char * str = (block_to_str(b);
+    char * str = (block_to_str(b));
     b->hash = SHA256(str, strlen(str), 0);
-*/
+
 
     fclose(f);
 
     return b;
-
-
 
 }
 
@@ -164,23 +162,32 @@ char * hash_to_str(unsigned char * s){
     res[j]='\0';
     return res;
     
+   
 }
+
+int hexa_to_int(char c){
+    if ((c >= '0')&&(c <= '9')){
+        return c - '0';
+    } else  {
+        return c - 'a' + 10;
+    }
+}
+
 
 unsigned char * str_to_hash(char * hash_hexa){
     unsigned char * hash = (unsigned char *)malloc(sizeof(unsigned char)*SHA256_DIGEST_LENGTH);
     char tmp[3];
     for(int i = 0; i < strlen(hash_hexa); i = i + 2){
 
+        char c1, c2;
         int d1, d2;
         char tmp1[2];
         char tmp2[2];
-        tmp1[0] = hash_hexa[i];
-        tmp1[1] = '\0';
-        tmp2[0] = hash_hexa[i+1];
-        tmp2[1] = '\0';
-
-        sscanf(tmp1, "%d", &d1);
-        sscanf(tmp2, "%d", &d2);
+        c1 = hash_hexa[i];
+        d1 = hexa_to_int(c1);
+        
+        c2 = hash_hexa[i+1];
+        d2 = hexa_to_int(c2);
 
         hash[i/2]= d1 * 16 + d2;
                
