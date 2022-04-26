@@ -2,7 +2,7 @@
 
 int main(){
 
-    generate_random_data(8,4);//  nv > nc !! Le nombre de candidat doit être inférieur au nombre de citoyen  (nv, nc)
+    generate_random_data(5,2);//  nv > nc !! Le nombre de candidat doit être inférieur au nombre de citoyen  (nv, nc)
 
     return 0; 
 
