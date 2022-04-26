@@ -260,6 +260,19 @@ CellTree* create_node(Block* b){
     return cell; 
 }
 
+//Fonction ajouté qui renvoie un pointeur vers l'arbre
+CellTree* racine(CellTree* tree){
+    if(tree == NULL){
+        printf("l'arbre est vide dans racine\n");
+        exit(0);
+    }
+    CellTree* tree_courant = tree;
+    while(tree_courant->father){
+        tree_courant = tree_courant->father; 
+    }
+    return tree_courant;
+}
+
 int update_height(CellTree* father, CellTree* child) {
     //Si la hauteur du fils +1 n'est pas superieur 
     int height_child = child->height; 
@@ -356,6 +369,8 @@ CellTree *highest_child(CellTree* cell){
     }
     return highest; 
 }
+
+//Renvoie le dernier noeud de l'arbre; la branche la plus grande
 CellTree* last_node(CellTree* tree){
     //tant que nous ne trouvons pas de feuille, il faut continuer de parcourir l'arbre
 
@@ -368,6 +383,7 @@ CellTree* last_node(CellTree* tree){
     }
 }
 
+//Renvoie la fusion entre deux cellules de declaration 
 CellProtected* fusion_declaration(CellProtected* decl1, CellProtected* decl2){
 
     CellProtected* fusion = (CellProtected*)malloc(sizeof(CellProtected));
@@ -388,6 +404,7 @@ CellProtected* fusion_declaration(CellProtected* decl1, CellProtected* decl2){
     return fusion; 
 }
 
+//Permet de fusionner les declarations de tous les noeuds de l'arbre
 CellProtected* fusion_blockchain(CellTree *t){
     if((t == NULL)|| (t->block->votes ==NULL)){
         printf("L'arbre est vide ou le block ne contient pas de déclaration de vote\n"); 
