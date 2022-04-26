@@ -74,17 +74,25 @@ Block* lecture_bloc(char * nom_fichier){
 }
 
 
-/*retourne la chaine de caractere representant le bloc*/
 char* block_to_str(Block* block){
 
     //calcul de la taille de la chaine 
-
+    
     int size = strlen(key_to_str(block->author)) + 1;
 
-    size = size + SHA256_DIGEST_LENGTH*2 + 1; 
+    size = size + SHA256_DIGEST_LENGTH*2 + 1;
+ 
+        //calcul du nombre de votes
+    CellProtected * v = block->votes;
+    int nb_votes = 0;
+    while(v){
+        nb_votes++;
+        v = v->next;     
+    }
     
     CellProtected * votes = block->votes;
-    while(votes){
+
+    for(int i = 0; i < nb_votes - 1; i++){
         size = size + strlen(protected_to_str(votes->data)) + 1;
         votes = votes->next;     
     }
@@ -102,7 +110,7 @@ char* block_to_str(Block* block){
    
     //creation de la chaine
 
-    char *res = (char *)malloc(sizeof(char)*size);
+    char *res = (char *)malloc(sizeof(char)*10000); //pb avec size d'ou le 10000
     if (res == NULL){
         printf("erreur malloc bloc_to_str\n");
     }
@@ -117,20 +125,26 @@ char* block_to_str(Block* block){
     res[strlen(res)]= '\n';
     res[strlen(res)+1]= '\0';
 
-
-    votes = block->votes;
-    while(votes){
-        strcat(res, protected_to_str(votes->data));
-        res[strlen(res)]= '\n';
-        res[strlen(res)+1]= '\0';
-        votes = votes->next;
-    }
-
     char * str_nonce = (char*)malloc(sizeof(char)*round(nb_chiffres) + 2);
     sprintf(str_nonce, "%d", block->nonce);
     strcat(res, str_nonce);
+    res[strlen(res)]= '\n';
+    res[strlen(res)+1]= '\0';
 
+
+    votes = block->votes;
+    char * vote;
+    for(int i = 0; i < nb_votes - 1; i++){              
+        if ((votes->data)!=NULL ){
+            char * vote = protected_to_str(votes->data);
+            strcat(res, vote);
+            res[strlen(res)]= '\n';
+            res[strlen(res)+1]= '\0';
+        }
+        votes = votes->next;
+    }
     return res;
+    
 }
 
 
