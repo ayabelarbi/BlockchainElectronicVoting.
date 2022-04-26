@@ -16,12 +16,14 @@ void init_pair_keys(Key* pKey, Key* sKey, long low_size, long up_size){
     while ( p == q ) {
         q = random_prime_number (low_size ,up_size , 5000) ;
     }
-    long n , s , u, t ;
+    long n = 0;
+    long s = 0;
+    long u = 0;
     generate_key_values (p ,q ,&n ,&s ,&u ) ;
     
     //Pour avoir des cles positives :
+    long t = (p -1) *( q -1) ;
     if (u < 0) {
-        t = (p -1) *( q -1) ;
         u = u + t ; //on aura toujours s*u mod t = 1
     }
     init_key(pKey,s,n);
@@ -135,10 +137,19 @@ Protected* init_protected(Key* pKey, char* mess, Signature* sgn){
     if (res == NULL){
         printf("erreur malloc init_protected\n");
     }
-    res->pKey = pKey; 
-    res->mess = mess; 
-    res->sgn = sgn;
-    return res; 
+    res->mess = strdup(mess); 
+
+    res->pKey = (Key *)malloc(sizeof(Key));
+    init_key(res->pKey,pKey->val,pKey->n);	
+
+    long * new_content = (long *)malloc(sizeof(long)*sgn->size);
+    long * content = sgn->content;
+    for(int i = 0; i<sgn->size; i++){
+        new_content[i] = content[i];
+    }
+    res->sgn = init_signature(new_content, sgn->size);
+
+    return res;
 }
 
 /*retourne 1 si la Signature de pr correspond bien au message et à la personne contenue dans pr, 0 sinon*/
@@ -169,22 +180,19 @@ char* protected_to_str(Protected* pr){
         printf("erreur signature vide dans protected_to_str");
     }
 
-    int size =  strlen(key)+strlen(pr->mess)+strlen(s)+3;
+    char * mess = pr->mess;
+
+    int size =  strlen(key)+strlen(mess)+strlen(s)+3;
     char *res = (char *)malloc(size*sizeof(char));
     if (res == NULL){
         printf("erreur malloc protected_to_str\n");   
     }
 
-    // printf("key = %s\n", key); 
-    // printf("mess = %s\n", pr->mess);
-    // printf("signature = %s\n", s);
-    strcpy(res,"");
-    strcat(res,key);
-    strcat(res," ");
-    strcat(res,pr->mess);
-    strcat(res," ");
-    strcat(res, s);
-    strcat(res,"");
+    char k[strlen(key)];
+    *k = 
+
+    sprintf(res,"%s %s %s",key,mess,s);
+
     free(key);
     free(s);
     return res;
