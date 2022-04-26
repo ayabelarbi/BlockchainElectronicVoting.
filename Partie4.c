@@ -4,8 +4,8 @@
 #define MAX 3000
 
 
-void ecriture_bloc(Block * block){
-    FILE *fb = fopen("bloc.txt", "w");
+void ecriture_bloc(Block * block, char * nom_fichier){
+    FILE *fb = fopen(nom_fichier, "w");
     if(fb == NULL){
         printf("Erreur d'ouvertur du fichier");
         exit(1);
