@@ -18,7 +18,7 @@ void ecriture_bloc(Block * block){
 
 
 
-Block* lecture_bloc(char * nom_fichier){  
+Block* lecture_bloc(char * nom_fichier){ 
     FILE *f = fopen(nom_fichier, "r");
     if(f == NULL){
         printf("Erreur d'ouverture de fichier");
@@ -44,13 +44,13 @@ Block* lecture_bloc(char * nom_fichier){
     sscanf(str_nonce, "%d",&nonce);
     b->nonce = nonce;
 
+
     //on recupere les votes
     char buffer[256];
     CellProtected * votes = (CellProtected*)malloc(sizeof(CellProtected));
     Protected * vote_courant;
     while(fgets(buffer, 256, f)!=NULL){
         if (buffer[0]!='\0'){
-            vote_courant = (Protected*)malloc(sizeof(Protected));
             vote_courant = str_to_protected(buffer);
             votes = ajout_en_tete(votes, vote_courant);
         }
@@ -60,12 +60,17 @@ Block* lecture_bloc(char * nom_fichier){
 
 /*
     //on creer le hash
-    b->hash = SHA256(block_to_str(b), strlen(block_to_str(b)), 0);
+    
+    char * str = (block_to_str(b);
+    b->hash = SHA256(str, strlen(str), 0);
 */
 
     fclose(f);
 
     return b;
+
+
+
 }
 
 
