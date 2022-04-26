@@ -23,12 +23,7 @@ int main(){
     printf("\n");
 
 
-    char path[256]; 
-    strcpy(path, "./BlockChain/");
-
     int j = 0; 
-    
-
     CellTree* t = NULL;
  
     CellProtected* pr_courant = declarations;
