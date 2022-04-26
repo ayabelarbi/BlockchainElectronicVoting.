@@ -12,6 +12,14 @@ typedef struct block {
     int nonce ;
 } Block ;
 
+typedef struct block_tree_cell {
+    Block * block ;
+    struct block_tree_cell * father ;
+    struct block_tree_cell * firstChild ;
+    struct block_tree_cell * nextBro ;
+    int height ;
+} CellTree ;
+
 void ecriture_bloc(Block * block);
 Block* lecture_bloc(char * nom_fichier); 
 char* block_to_str(Block* block); 
