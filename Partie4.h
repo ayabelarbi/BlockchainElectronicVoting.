@@ -20,7 +20,7 @@ typedef struct block_tree_cell {
     int height ;
 } CellTree ;
 
-void ecriture_bloc(Block * block);
+void ecriture_bloc(Block * block, char * nom_fichier);
 Block* lecture_bloc(char * nom_fichier); 
 char* block_to_str(Block* block); 
 char * hash_to_str(unsigned char * s);
@@ -38,6 +38,7 @@ void delete_tree(CellTree* tree);
 CellTree *highest_child(CellTree* cell); 
 CellProtected* fusion_declaration(CellProtected* decl1, CellProtected* decl2);
 CellProtected* fusion_blockchain(CellTree *t);
+CellTree* last_node(CellTree* tree);
 #endif
 
 
