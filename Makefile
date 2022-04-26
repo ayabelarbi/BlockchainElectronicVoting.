@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -g -Wall -Wextra -pedantic
 
-PROGRAMS = mainP1 mainP2 mainP3 mainP4 mainP2_4 mainP5
+PROGRAMS = mainP1 mainP2 mainP3 mainP4 mainP2_4 mainP5 courbe_compute_proof_of_work
 
 all : $(PROGRAMS)
 
@@ -20,6 +20,10 @@ mainP3 : mainP3.o Partie1.o Partie2.o Partie3.o
 mainP4 : mainP4.o Partie1.o Partie2.o Partie3.o Partie4.o 
 	$(CC) -ggdb -o $@ $(CFLAGS) $^ -lm -lssl -lcrypto
 
+courbe_compute_proof_of_work : courbe_compute_proof_of_work.o Partie1.o Partie2.o Partie3.o Partie4.o
+	$(CC) -ggdb -o $@ $(CFLAGS) $^ -lm -lssl -lcrypto
+
+
 mainP5 : mainP5.o Partie1.o Partie2.o Partie3.o Partie4.o Partie5.o
 	$(CC) -ggdb -o $@ $(CFLAGS) $^ -lm -lssl -lcrypto
 
@@ -34,6 +38,9 @@ mainP3.o : mainP3.c
 
 mainP4.o : mainP4.c
 	gcc -c mainP4.c
+
+courbe_compute_proof_of_work.o : courbe_compute_proof_of_work.c
+	gcc -c courbe_compute_proof_of_work.c
 
 mainP5.o : mainP5.c
 	gcc -c mainP5.c
