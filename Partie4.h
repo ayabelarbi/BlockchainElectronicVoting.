@@ -28,6 +28,7 @@ unsigned char * str_to_hash(char * hash_hexa);
 void compute_proof_of_work(Block * B, int d);
 int verify_block(Block * b, int d);
 void delete_block(Block* b);
+int hexa_to_int(char c);
 
 CellTree* create_node(Block* b); 
 int update_height(CellTree* father, CellTree* child);
